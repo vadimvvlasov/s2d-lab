@@ -35,7 +35,7 @@ The user supplies only a conversation history and runs `/recap`.
 7. If auditor did not read original input, mark independent audit NOT PERFORMED.
 8. Resolve BLOCKER and MAJOR issues. A narrow re-check is allowed for a material fix; no unbounded loops.
 9. Write one participant-facing report following `docs/output-contract.md` and `templates/conversation-research-recap.md`.
-10. Save as `runs/YYYY-MM-DD-conversation-research-recap.md`; do not overwrite an existing report. Present the same report in the session.
+10. Save as `runs/YYYY-MM-DD-conversation-research-recap.md`; if that file already exists, append `-2`, `-3`, etc. before the extension. Do not overwrite. Present the same report in the session.
 11. Delete temporary private inputs and packets from the run workspace after saving. If cleanup fails, disclose it and ensure the path is Git-ignored.
 
 ## Research and recommendation policy
