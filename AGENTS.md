@@ -48,3 +48,19 @@ Only the final Conversation Research Recap is user-facing. Do not expose verbose
 ## Git hygiene
 - Make regular, thematic commits as work progresses: small, coherent commits, one per logical change; do not accumulate one giant commit or commit file-by-file, and do not mix unrelated changes in the same commit.
 - Never delete a repository's `.git` directory or its contents (e.g., `rm -rf .git`); destroying git history requires explicit user confirmation.
+
+
+### Bounded verifier/rework loop
+- Maximum **3 rework cycles per artifact** (Question Map, Research Packet, Final Report)
+- Every `BLOCKER` or `MAJOR` finding creates a structured Change Request (CR) routed to the responsible agent
+- Producer creates new artifact version (v2, v3, v4) with resolution notes
+- Auditor independently rechecks affected scope and dependent claims
+- After cycle 3, unresolved `BLOCKER`/`MAJOR` findings escalate to owner; no fourth cycle or silent pass
+- No verified release while any `BLOCKER` is unresolved
+- A `MAJOR` must be fixed or the affected claim narrowed/removed and limitation disclosed
+
+### Artifact versioning
+- Each reviewable artifact has explicit version: v1, v2, v3, v4
+- Every review identifies exact artifact version
+- Original conversation stored in `runs/.work/<run-id>/source.md` and accessible to all Auditor invocations
+- Run state persists: run_id, artifact versions, cycle counts, CR statuses, verdicts, release eligibility
