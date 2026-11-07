@@ -1,0 +1,55 @@
+# Run state template
+# Location: runs/.work/<run-id>/state.yaml
+
+run_id: "YYYY-MM-DD-<short-slug>"
+timestamp: "YYYY-MM-DDTHH:MM:SSZ"
+source_ref: "runs/.work/<run-id>/source.md"
+
+artifacts:
+  question_map:
+    current_version: "v1"
+    cycle_count: 0
+    status: "submitted_for_review"  # draft | submitted_for_review | pass | changes_requested | escalated
+  research_packet:
+    current_version: "v1"
+    cycle_count: 0
+    status: "submitted_for_review"
+  final_report:
+    current_version: null
+    cycle_count: 0
+    status: "not_started"
+
+change_requests:
+  # Example:
+  # - cr_id: "CR-001"
+  #   finding_id: "F-001"
+  #   artifact: "research_packet"
+  #   reviewed_version: "v1"
+  #   target_version: "v2"
+  #   severity: "MAJOR"
+  #   assigned_to: "quant-researcher"
+  #   cycle: 1
+  #   status: "open"  # open | submitted_for_recheck | verified_resolved | accepted_with_limitation | escalated_to_owner
+
+verification_history:
+  # Example:
+  # - review_id: "REV-001"
+  #   review_scope: "research_packet"
+  #   artifact_version: "v1"
+  #   verdict: "CHANGES_REQUESTED"  # PASS | PASS_WITH_LIMITATIONS | CHANGES_REQUESTED | BLOCKED
+  #   findings_count: 2
+  #   blocker_count: 0
+  #   major_count: 2
+  #   minor_count: 0
+
+final_audit:
+  status: "not_started"  # not_started | in_progress | pass | pass_with_limitations | changes_requested | blocked
+  report_version_audited: null
+  unresolved_blockers: 0
+
+release:
+  eligible: false
+  path: null  # "runs/YYYY-MM-DD-conversation-research-recap.md" when released
+
+current_phase: "question_mapping"  # question_mapping | research | research_audit | research_rework | synthesis | final_audit | final_rework | released | escalated
+next_action: "Invoke conversation-analyst with source"
