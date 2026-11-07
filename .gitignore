@@ -9,3 +9,6 @@ Thumbs.db
 # Temporary research inputs
 tmp/
 .cache/
+
+# Run-specific private workspaces
+runs/.work/
