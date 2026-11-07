@@ -1,46 +1,50 @@
-# Decision Brief output contract
+# Conversation Research Recap — output contract
 
-The user receives one Markdown report. Intermediate ledgers and agent notes remain internal.
+The report is for people who participated in the conversation. It should make them feel accurately understood and leave them with useful answers, options, and a clearer next question.
 
-## Required sections
+**Target:** 500–1,000 words; up to 1,300 only for a genuinely complex discussion. No minimum length.
 
-### 1. Executive Summary
-Up to five bullets: key conclusion, most consequential verified/corrected claim, biggest uncertainty, practical implication, best next step.
+## Required structure
 
-### 2. Key Findings
-Up to five findings, ranked by decision impact. Each finding includes:
-- Conclusion.
-- Verification status and evidence grade.
-- Why it matters.
-- Limitation.
+### 1. Title
+Specific, interesting, factual, neutral. Reflect the central tension/question, not clickbait.
 
-### 3. Quantitative Results
-Only material reproducible calculations. Show inputs, units, formula, and result. If data are insufficient, state that.
+### 2. За минуту
+Two to four bullets:
+- what participants were trying to understand;
+- the most useful answer/result;
+- the best-fit option or key unresolved trade-off.
 
-### 4. Strategy and Technical Assessment
-Separate:
-- Evidence-based findings.
-- Interpretations.
-- Hypotheses to test.
-- Recommendations.
+### 3. Вопросы, которые действительно стояли перед участниками
+Up to 3 high-priority questions. For each:
 
-Omit irrelevant subsections.
+**Вопрос:** concise neutral formulation.  
+**Кто поднял:** participant(s), only where supported. Mark explicit vs inferred.  
+**Что уже было в чате:** short account of discussion and differing views.  
+**Что удалось выяснить:** direct answer, plain language, evidence/citations.  
+**Какие есть варианты:** 2–4 options if this is a real choice; compact table allowed.  
+**Лучший вариант и почему:** recommendation under stated objective/constraints, with trade-off and when another option would win.  
+**Насколько уверены:** evidence status and key limitation.
 
-### 5. Decisions and Open Questions
-Only explicit decisions and unresolved assumptions/questions that could change the next decision.
+Do not force all fields for a purely factual question. Do not repeat the same result across sections.
 
-### 6. Recommended Next Steps
-Up to three actions/experiments. For each: hypothesis, required test/data, result that would support/reject it, and decision informed.
+### 4. Где участники расходятся
+Only material disagreements. Attribute positions fairly and explain the underlying criterion when supported. No personality analysis.
 
-### 7. Sources and Verification Limits
-Only sources actually used. State whether external research was available and which important items remain unverified.
+### 5. Что осталось открытым
+Up to 3 unresolved questions that could change a recommendation or usefully continue the discussion. No artificial action items.
 
-## Editorial rules
-- Target 700–1,400 words; absolute default ceiling 1,800.
-- Conclusions first, short paragraphs.
-- No chronological transcript.
-- No generic educational exposition.
-- No repeated findings across sections.
-- No source/literature dump.
-- Fewer than five findings is normal.
-- Every paragraph must contribute to a decision or materially clarify uncertainty.
+### 6. Источники
+Short list of sources actually consulted, grouped by question if needed. Link directly. State when data/access were unavailable.
+
+## Style
+- Natural, conversational Russian by default.
+- Explain unavoidable jargon at first use.
+- Conclusions before method.
+- Neutral and fair attribution.
+- No clickbait, mockery, forced humour, or participant imitation.
+- Short paragraphs; tables only for real comparisons.
+- Do not list every transcript claim or minor side story.
+
+## Integrity
+Never fabricate quotes, questions, decisions, sources, or participant intent. Label inferred questions explicitly. Do not label an individual's preference as a group decision.

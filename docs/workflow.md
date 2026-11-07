@@ -1,50 +1,43 @@
-# S2D workflow
+# Question-first S2D workflow
 
 ## User interaction
-
-The user supplies one conversation history and invokes `/recap`. No configuration questionnaire is required for the MVP.
+One input: conversation history. One command: `/recap`. One user-facing Markdown report.
 
 ## Sequence
 
-```text
-Conversation history
-        |
-        v
-Conversation Analyst
-  - material-only extraction
-  - claims / decisions / hypotheses / unknowns
-        |
-        v
-Quant Researcher
-  - formalize important questions
-  - select relevant sources
-  - verify and calculate
-  - return evidence packet
-        |
-        v
-Independent Auditor
-  - separate context
-  - inspect original history and evidence packet
-  - identify blockers/major defects
-        |
-        v
-Research Lead
-  - resolve disagreements
-  - filter noise
-  - synthesize one report
-        |
-        v
-runs/YYYY-MM-DD-decision-brief.md
-```
+1. **Conversation mapping**
+   - extract explicit questions;
+   - infer underlying questions only when supported by turns;
+   - filter rhetorical questions/banter;
+   - attach speaker/time/line anchors;
+   - map views, objections, and genuine disagreements.
+2. **Question prioritization**
+   - select up to 3 research questions by importance and answerability;
+   - explicit participant needs take precedence over merely interesting topics;
+   - do not research throwaway jokes.
+3. **Problem formalization**
+   - restate the actual question and intended outcome;
+   - identify constraints and unknowns;
+   - define what a useful answer would establish.
+4. **Answer and option discovery**
+   - answer directly;
+   - build 2–4 realistic options only when a genuine choice exists;
+   - compare using consistent, conversation-grounded criteria.
+5. **Best-fit recommendation**
+   - choose the best option for the stated constraints;
+   - explain why it fits best;
+   - state downside and when another option would be better;
+   - allow "no defensible winner yet".
+6. **Independent audit**
+   - auditor reads the original source itself;
+   - audits question attribution, answer relevance, evidence, comparison fairness, and recommendation logic.
+7. **Reader-facing synthesis**
+   - lively but neutral title;
+   - short summary;
+   - question → answer → options → best fit;
+   - meaningful disagreement and open next question;
+   - concise sources.
 
-## Research selection logic
+## Context integrity
 
-- arXiv: use only for a relevant academic/methodological question.
-- Investopedia: use for definitions and conceptual distinctions.
-- StockCharts ChartSchool: use for technical-analysis methods and indicator definitions.
-- Other primary sources may be necessary for exact financial facts (issuer, exchange, regulator, broker, original data). The three named sites are not exclusive sources.
-- Never force all three sources into a report.
-
-## Audit loop
-
-One audit pass is required. The lead may ask for a narrow re-check only if a BLOCKER or MAJOR issue can realistically be resolved with available evidence. No unbounded loops. Unresolved issues must remain visible in the final brief.
+The Lead must not rely on implicit context inheritance for uploaded conversations. Store the full conversation in a run-specific ignored workspace and pass the source path to every subagent. The auditor must confirm it read that file. Temporary private inputs and agent packets are deleted after the final report.

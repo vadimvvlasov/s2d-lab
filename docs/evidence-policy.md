@@ -1,46 +1,41 @@
-# Evidence policy
+# Evidence and recommendation policy
 
-## Verification statuses
+## Four distinct layers
 
-- VERIFIED — directly supported by sufficiently relevant evidence.
-- PARTIALLY VERIFIED — only part of the claim is supported.
-- CONDITIONAL — true only under stated assumptions/scope.
-- REFUTED — contradicted by stronger relevant evidence.
-- RELATED BUT NOT EQUIVALENT — source concerns a nearby concept but does not establish the claim.
-- UNVERIFIED — no adequate verification.
-- INSUFFICIENT DATA — required inputs are missing.
-- NOT APPLICABLE — verification is not meaningful for the statement.
+- **Conversation evidence:** what a participant actually said.
+- **External evidence:** what a source or dataset supports.
+- **Interpretation:** what the evidence may mean.
+- **Recommendation:** which option best fits a stated goal and why.
+
+Do not collapse these layers.
+
+## Verification labels
+VERIFIED; PARTIALLY VERIFIED; CONDITIONAL; REFUTED; RELATED BUT NOT EQUIVALENT; UNVERIFIED; INSUFFICIENT DATA; NOT APPLICABLE.
 
 ## Evidence grades
-
-- A — primary/authoritative: official issuer, exchange, regulator, original dataset, original paper, official technical documentation.
+- A — primary/authoritative source or original dataset.
 - B — peer-reviewed research or strong independent replication.
-- C — reputable secondary source with transparent methodology.
+- C — reputable secondary research with transparent method.
 - D — weak, aggregated, promotional, anecdotal, or poorly sourced.
-- E — unsupported or unverifiable.
+- E — unsupported.
 
-Grade relevance as well as source reputation. An official source can still be irrelevant to a particular claim.
+Relevance matters as much as publisher reputation.
 
-## Source traceability
+## Recommendation contract
 
-For each material external finding record:
-- Source title and publisher.
-- Canonical URL.
-- Publication/update date, if available.
-- Access date when useful.
-- Exact claim the source supports.
-- Scope and limitations.
+A recommendation is valid only if it includes:
+1. participant's stated/inferred goal;
+2. relevant constraints and criteria;
+3. alternatives actually considered;
+4. why the recommended option fits best;
+5. main disadvantage;
+6. when an alternative would be better;
+7. confidence and what could change the conclusion.
 
-Never cite search snippets as if the full page or paper was inspected. Do not invent citations or publication details.
+"Best" means "best fit for this objective and context among the options evaluated", never universally optimal.
 
-## Financial calculation requirements
+If goals/criteria/data are unclear, state assumptions, give a conditional recommendation, or say no defensible winner can be selected. Do not invent numeric scores, weights, expected returns, probabilities, or performance estimates.
 
-For material calculations record:
-- Inputs and units.
-- Formula.
-- Intermediate steps.
-- Rounding convention.
-- Source of each input.
-- Assumptions and limitations.
+## Investment boundary
 
-If the input is incomplete, stop or show clearly labeled scenarios. Never fill gaps with invented values.
+Provide research and comparison of instruments, concepts, strategies, and evidence. Do not give personalized trade-execution instructions, guaranteed outcomes, or unsupported allocation/position sizing.
