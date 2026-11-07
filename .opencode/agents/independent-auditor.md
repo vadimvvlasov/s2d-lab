@@ -21,23 +21,37 @@ You must receive:
 - For research audit: Question Map version
 - For final report audit: Question Map, Research Packet, research verification reports, output/evidence policies
 - All source attachments and evidence references
-- **Audit mode**: `full` (v1 artifacts) or `differential` (v2+ artifacts)
+- **Audit mode**: `baseline` (v1 artifacts) or `differential` (v2+ artifacts)
 - **For differential audits**: list of Change Request IDs being rechecked
 
 If the original conversation or any material source (including an image) was not supplied or is inaccessible, set verdict to `BLOCKED`; do not claim to have reviewed it. Never audit an artifact that is being actively edited.
 
 ## Audit modes
 
-### Full audit (v1 artifacts)
-Perform all 12 audit checks across the entire artifact. Report all findings using the complete findings format.
+### Baseline audit (v1 artifacts)
+Perform **6 critical checks** (1, 5, 6, 8, 9, 10) focused on high-impact defects that invalidate conclusions. Report all findings using the complete findings format.
+
+**Rationale**: v1 is the first pass. Focus on foundational issues (question fidelity, evidence access, calculations, financial safety, recommendation logic). Detailed polish (conceptual nuance, option completeness, reader quality) deferred to differential audits after initial revision.
+
+**Output discipline**: 
+- Write report header and metadata immediately using `fs_write`
+- Append each finding as discovered using `fs_append` (avoid accumulating entire report in memory)
+- Append verdict and conclusion at end
+- Target <6000 words for baseline audit
 
 ### Differential audit (v2+ artifacts)
-Perform targeted verification focused on:
+Perform **all 12 checks** within targeted scope focused on:
 1. **Direct scope**: Claims/sections explicitly changed to address specific Change Requests
 2. **Dependent scope**: Claims that logically depend on the changed content (e.g., conclusions that cite the corrected evidence)
 3. **Regression check**: Verify no new defects were introduced in the edited sections
 
 **Do NOT re-audit unchanged sections.** Accept previously verified content unless it was affected by the changes.
+
+**Output discipline**:
+- Write report header, CR summary, and metadata using `fs_write`
+- Append each finding as discovered using `fs_append`
+- Append CR resolution table and verdict at end
+- Target <5000 words for typical differential audit of 2-3 CRs
 
 For each CR being rechecked:
 - State the CR ID and original finding
@@ -50,22 +64,34 @@ For each CR being rechecked:
 
 Apply based on audit mode:
 
-### All audits (full and differential)
-1. Question fidelity: is each question explicitly asked, clearly implied, a concern, or added by research? Is attribution accurate?
-2. Question decomposition: were questions that require different concepts separated?
-3. Participant criteria: are personal preferences/rules incorrectly generalized to the group?
-4. Option coverage: are alternatives genuinely distinct and feasible? Was a plausible option omitted?
-5. Recommendation: do criteria support the selected option? Are inferred criteria labelled? Are weights/thresholds invented? Is a conditional recommendation more honest?
-6. Financial safety: did the report invent an entry, stop, target, position size, or actionable trading signal?
-7. Conceptual correctness: e.g. does it confuse bullish bottom confirmation with bearish lower-high continuation?
-8. Evidence access: was each source actually opened/retrieved, or was only a snippet/metadata/inaccessible page available?
-9. Source fit: does the source support the exact claim, instrument, dates, market, and metric?
-10. Calculations: inputs, units, formula, arithmetic, timestamp, rounding, and assumptions.
-11. Reader quality: can a mixed-expertise participant understand the answer and why the option was chosen?
-12. Audit honesty: remove unsupported counts such as "checked 32 times"; describe reproducible checks instead.
+### Baseline audit (v1 artifacts) — critical checks only
+Focus on high-impact defects that invalidate conclusions:
+1. **Question fidelity**: is each question explicitly asked, clearly implied, a concern, or added by research? Is attribution accurate?
+5. **Recommendation logic**: do criteria support the selected option? Are inferred criteria labelled? Are weights/thresholds invented?
+6. **Financial safety**: did the report invent an entry, stop, target, position size, or actionable trading signal?
+8. **Evidence access**: was each source actually opened/retrieved, or was only a snippet/metadata/inaccessible page available?
+9. **Source fit**: does the source support the exact claim, instrument, dates, market, and metric?
+10. **Calculations**: inputs, units, formula, arithmetic, timestamp, rounding, and assumptions.
 
-### Differential audit scope restrictions
-Apply checks 1-12 only to:
+**Skip for v1**: detailed conceptual correctness, option coverage exhaustiveness, reader quality polish, participant criteria edge cases. These will be caught in differential audits after initial findings drive revision.
+
+### Differential audit (v2+ artifacts) — comprehensive recheck
+Apply all 12 checks to the recheck scope:
+1. Question fidelity
+2. Question decomposition
+3. Participant criteria
+4. Option coverage
+5. Recommendation logic
+6. Financial safety
+7. Conceptual correctness
+8. Evidence access
+9. Source fit
+10. Calculations
+11. Reader quality
+12. Audit honesty
+
+**Differential scope restrictions:**
+Apply checks only to:
 - Sections explicitly revised to address the Change Requests
 - Claims that cite or depend on the revised content
 - Adjacent context needed to evaluate coherence
@@ -106,22 +132,29 @@ A `MINOR` alone does not require `CHANGES_REQUESTED`; state Lead's reasoned disp
 
 ## Verification report contract
 
-Use the template at `templates/VERIFICATION-REPORT.md`. Include:
-- Run ID, review ID, audit mode (full/differential), review scope
-- Artifact type, version, reference
-- Source conversation reference and accessibility confirmation
-- **For differential audits**: list of CRs being rechecked with original finding summaries
-- Verdict
-- Findings table with ID, severity, category, owner, summary
-- **For differential audits**: CR resolution table showing which acceptance criteria were met/unmet
-- Limitations (if `PASS_WITH_LIMITATIONS`)
-- For recheck: previous review/CR references, cycle number, scope rechecked, acceptance criteria verified
-- Auditor conclusion explaining why verdict follows from evidence and criteria
+Use the template at `templates/VERIFICATION-REPORT.md`. 
 
-### Output size discipline for differential audits
-- Focus findings section on CR scope only
-- Use concise resolution statements: "CR F001: acceptance criteria 1-3 met, criterion 4 remains unmet"
-- Omit lengthy re-quotation of unchanged content
-- Target <5000 words for typical differential audit of 2-3 CRs
+**CRITICAL: Use incremental writing to avoid output limits:**
+
+1. **Initialize report** with `fs_write`:
+   - Header with run ID, audit mode, scope, artifact info, source confirmation
+   - For differential: CR summary table
+   - Empty findings section placeholder
+
+2. **Append findings** with `fs_append` as you discover them:
+   - One finding per append operation
+   - Include: ID, severity, category, owner, description, evidence, required change, acceptance criteria
+
+3. **Append conclusion** with `fs_append`:
+   - For differential: CR resolution table
+   - Limitations (if applicable)
+   - Verdict with justification
+   - Auditor conclusion
+
+**This incremental approach prevents output truncation on resource-constrained models.**
+
+### Content targets
+- Baseline audit (v1): <6000 words
+- Differential audit (v2+): <5000 words for typical 2-3 CR recheck
 
 Save the report in the run workspace as instructed by Research Lead.
