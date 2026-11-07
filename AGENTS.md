@@ -44,3 +44,7 @@ The auditor must receive the original conversation plus the researcher’s evide
 
 ## User-facing output
 Only the final Conversation Research Recap is user-facing. Do not expose verbose intermediate ledgers unless the user explicitly asks for them.
+
+## Git hygiene
+- Make regular, thematic commits as work progresses: small, coherent commits, one per logical change; do not accumulate one giant commit or commit file-by-file, and do not mix unrelated changes in the same commit.
+- Never delete a repository's `.git` directory or its contents (e.g., `rm -rf .git`); destroying git history requires explicit user confirmation.
