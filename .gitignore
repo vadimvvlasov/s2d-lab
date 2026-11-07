@@ -11,6 +11,8 @@ tmp/
 .cache/
 
 # Run-specific private workspaces
+.venv/
 runs/.work/
 runs/*.md
 runs/*.pdf
+s2d-lab-recap-v2-patch/
