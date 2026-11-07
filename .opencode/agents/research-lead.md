@@ -30,13 +30,20 @@ Turn the supplied conversation into an engaging, useful **Conversation Research 
 
 3. **Research Packet v1:** Give the original conversation source path, Question Map v1, and relevant attachments to `quant-researcher`. Save output as `runs/.work/<run-id>/02-research-packet-v1.md`.
 
-4. **Research audit (cycle 0):** Give the original conversation source path, Question Map, Research Packet, and all evidence references to `independent-auditor` in a separate invocation. The auditor must confirm source access. Save verification report as `runs/.work/<run-id>/03-verification-research-v1.md`.
+4. **Research audit (cycle 0):** Give the original conversation source path, Question Map, Research Packet, and all evidence references to `independent-auditor` in **`full` audit mode** in a separate invocation. The auditor must confirm source access. Save verification report as `runs/.work/<run-id>/03-verification-research-v1.md`.
 
 5. **Rework loop (maximum 3 cycles):**
    - For each `BLOCKER` or `MAJOR` finding, create a structured Change Request using `templates/CHANGE-REQUEST.md`.
    - Route CR to the responsible agent: `conversation-analyst` for question attribution/extraction/splitting; `quant-researcher` for evidence/calculations/options/recommendation logic; yourself for synthesis/report issues.
    - Producer creates new artifact version (v2, v3, v4) with resolution notes.
-   - Auditor independently rechecks affected scope and dependent claims. Save recheck report.
+   - Auditor independently rechecks in **`differential` audit mode**, providing:
+     - Source conversation path
+     - New artifact version and version number
+     - Question Map version (if applicable)
+     - Audit mode: `differential`
+     - List of CR IDs being rechecked (e.g., `["F001", "F002"]`)
+     - Paths to original CR files for reference
+   - Save recheck report as `runs/.work/<run-id>/0X-verification-research-vN.md`.
    - Track cycle count per artifact. After cycle 3, unresolved `BLOCKER`/`MAJOR` findings escalate to `ESCALATED_TO_OWNER`. Never start cycle 4 or silently pass.
    - `MINOR` findings: record reasoned disposition; no CR required unless you choose to fix.
 
