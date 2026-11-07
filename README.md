@@ -4,27 +4,7 @@ S2D Lab turns a supplied conversation into one **Conversation Research Recap**.
 
 ## User flow
 
-```text
-Conversation history
-      |
-      v
-/recap
-      |
-      v
-Participant question map
-      |
-      v
-Research answers + compare options
-      |
-      v
-Best-fit recommendation + trade-offs
-      |
-      v
-Independent audit against original chat
-      |
-      v
-One readable Markdown recap
-```
+![S2D Lab user flow](docs/assets/user-flow.svg)
 
 The user does not select agents, sources, or research mode manually.
 

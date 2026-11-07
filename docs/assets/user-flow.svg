@@ -1,0 +1,149 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 900" font-family="'Inter', 'Segoe UI', system-ui, sans-serif">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0f1117"/>
+      <stop offset="100%" stop-color="#161b27"/>
+    </linearGradient>
+    <linearGradient id="inputGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="cmdGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1d4ed8"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+    <linearGradient id="analystGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6d28d9"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="researchGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0e7490"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+    <linearGradient id="auditGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#b45309"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <linearGradient id="outputGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#065f46"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#475569"/>
+    </marker>
+    <marker id="arrowBlue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#3b82f6"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="680" height="900" fill="url(#bgGrad)" rx="16"/>
+
+  <!-- Subtle grid lines -->
+  <line x1="340" y1="30" x2="340" y2="870" stroke="#ffffff08" stroke-width="1"/>
+
+  <!-- Title -->
+  <text x="340" y="44" text-anchor="middle" fill="#94a3b8" font-size="11" letter-spacing="3" font-weight="500">S2D LAB</text>
+  <text x="340" y="68" text-anchor="middle" fill="#f1f5f9" font-size="22" font-weight="700">User Flow</text>
+
+  <!-- Step 1: Input -->
+  <rect x="140" y="95" width="400" height="74" rx="12" fill="url(#inputGrad)" stroke="#334155" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="340" y="123" text-anchor="middle" fill="#64748b" font-size="10" letter-spacing="2" font-weight="600">INPUT</text>
+  <text x="340" y="147" text-anchor="middle" fill="#e2e8f0" font-size="15" font-weight="600">Conversation history</text>
+  <text x="340" y="163" text-anchor="middle" fill="#64748b" font-size="11">paste or attach in OpenCode</text>
+
+  <!-- Arrow 1 -->
+  <line x1="340" y1="169" x2="340" y2="196" stroke="#334155" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step 2: Command -->
+  <rect x="230" y="200" width="220" height="56" rx="10" fill="url(#cmdGrad)" stroke="#3b82f6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="340" y="226" text-anchor="middle" fill="#bfdbfe" font-size="11" letter-spacing="1.5" font-weight="600">COMMAND</text>
+  <text x="340" y="246" text-anchor="middle" fill="#ffffff" font-size="18" font-weight="700" font-family="monospace">/recap</text>
+
+  <!-- Arrow 2 -->
+  <line x1="340" y1="256" x2="340" y2="283" stroke="#334155" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Private workspace note -->
+  <rect x="460" y="262" width="185" height="42" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <text x="552" y="278" text-anchor="middle" fill="#475569" font-size="9.5" font-weight="600">PRIVATE WORKSPACE</text>
+  <text x="552" y="294" text-anchor="middle" fill="#64748b" font-size="9">runs/.work/&lt;run-id&gt;/ · git-ignored</text>
+  <line x1="460" y1="283" x2="430" y2="295" stroke="#334155" stroke-width="1" stroke-dasharray="3,3"/>
+
+  <!-- Step 3: Analyst -->
+  <rect x="110" y="287" width="460" height="88" rx="12" fill="#1a0a2e" stroke="#6d28d9" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="110" y="287" width="460" height="4" rx="2" fill="url(#analystGrad)"/>
+  <text x="340" y="312" text-anchor="middle" fill="#a78bfa" font-size="10" letter-spacing="2" font-weight="600">CONVERSATION ANALYST</text>
+  <text x="340" y="335" text-anchor="middle" fill="#e2e8f0" font-size="13.5" font-weight="500">Participant question map</text>
+  <text x="208" y="358" text-anchor="middle" fill="#7c3aed" font-size="10">EXPLICIT</text>
+  <text x="295" y="358" text-anchor="middle" fill="#7c3aed" font-size="10">INFERRED</text>
+  <text x="390" y="358" text-anchor="middle" fill="#4c1d95" font-size="10">RHETORICAL</text>
+  <text x="490" y="358" text-anchor="middle" fill="#4c1d95" font-size="10">ANSWERED</text>
+  <line x1="245" y1="351" x2="245" y2="363" stroke="#4c1d95" stroke-width="1"/>
+  <line x1="340" y1="351" x2="340" y2="363" stroke="#4c1d95" stroke-width="1"/>
+  <line x1="440" y1="351" x2="440" y2="363" stroke="#4c1d95" stroke-width="1"/>
+
+  <!-- Arrow 3 -->
+  <line x1="340" y1="375" x2="340" y2="402" stroke="#334155" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step 4: Researcher -->
+  <rect x="110" y="406" width="460" height="104" rx="12" fill="#031a23" stroke="#0e7490" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="110" y="406" width="460" height="4" rx="2" fill="url(#researchGrad)"/>
+  <text x="340" y="431" text-anchor="middle" fill="#67e8f9" font-size="10" letter-spacing="2" font-weight="600">QUANT RESEARCHER</text>
+  <text x="340" y="453" text-anchor="middle" fill="#e2e8f0" font-size="13.5" font-weight="500">Answer → Compare options → Recommend</text>
+
+  <rect x="128" y="463" width="108" height="32" rx="6" fill="#0c4a6e" stroke="#0e7490" stroke-width="1"/>
+  <text x="182" y="483" text-anchor="middle" fill="#7dd3fc" font-size="10">Direct answer</text>
+
+  <line x1="236" y1="479" x2="250" y2="479" stroke="#0e7490" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <rect x="250" y="463" width="112" height="32" rx="6" fill="#0c4a6e" stroke="#0e7490" stroke-width="1"/>
+  <text x="306" y="483" text-anchor="middle" fill="#7dd3fc" font-size="10">2–4 options</text>
+
+  <line x1="362" y1="479" x2="376" y2="479" stroke="#0e7490" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <rect x="376" y="463" width="176" height="32" rx="6" fill="#0c4a6e" stroke="#06b6d4" stroke-width="1.5"/>
+  <text x="464" y="479" text-anchor="middle" fill="#a5f3fc" font-size="10" font-weight="600">Best fit + why + trade-off</text>
+
+  <!-- Arrow 4 -->
+  <line x1="340" y1="510" x2="340" y2="537" stroke="#334155" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step 5: Auditor -->
+  <rect x="110" y="541" width="460" height="80" rx="12" fill="#1c0f00" stroke="#b45309" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="110" y="541" width="460" height="4" rx="2" fill="url(#auditGrad)"/>
+  <text x="340" y="566" text-anchor="middle" fill="#fcd34d" font-size="10" letter-spacing="2" font-weight="600">INDEPENDENT AUDITOR</text>
+  <text x="340" y="588" text-anchor="middle" fill="#e2e8f0" font-size="13.5" font-weight="500">Checks questions, evidence, options, recommendations</text>
+  <text x="340" y="607" text-anchor="middle" fill="#78350f" font-size="10">reads original conversation · separate context · confirms access</text>
+
+  <!-- Arrow 5 -->
+  <line x1="340" y1="621" x2="340" y2="648" stroke="#334155" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step 6: Lead -->
+  <rect x="190" y="652" width="300" height="52" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+  <text x="340" y="674" text-anchor="middle" fill="#64748b" font-size="10" letter-spacing="1.5" font-weight="600">RESEARCH LEAD</text>
+  <text x="340" y="694" text-anchor="middle" fill="#cbd5e1" font-size="13" font-weight="500">Resolve issues · edit · finalize</text>
+
+  <!-- Arrow 6 -->
+  <line x1="340" y1="704" x2="340" y2="731" stroke="#334155" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step 7: Output -->
+  <rect x="110" y="735" width="460" height="100" rx="12" fill="#021f14" stroke="#10b981" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="110" y="735" width="460" height="4" rx="2" fill="url(#outputGrad)"/>
+  <text x="340" y="760" text-anchor="middle" fill="#34d399" font-size="10" letter-spacing="2" font-weight="600">OUTPUT</text>
+  <text x="340" y="784" text-anchor="middle" fill="#f1f5f9" font-size="15" font-weight="700">Conversation Research Recap</text>
+  <text x="340" y="803" text-anchor="middle" fill="#064e3b" font-size="10">runs/YYYY-MM-DD-conversation-research-recap.md</text>
+  <text x="220" y="825" text-anchor="middle" fill="#6ee7b7" font-size="10">500–1 000 words</text>
+  <line x1="272" y1="820" x2="272" y2="830" stroke="#065f46" stroke-width="1"/>
+  <text x="340" y="825" text-anchor="middle" fill="#6ee7b7" font-size="10">Russian by default</text>
+  <line x1="408" y1="820" x2="408" y2="830" stroke="#065f46" stroke-width="1"/>
+  <text x="465" y="825" text-anchor="middle" fill="#6ee7b7" font-size="10">one file only</text>
+
+  <!-- Bottom label -->
+  <text x="340" y="872" text-anchor="middle" fill="#1e293b" font-size="10">user does not configure agents, sources, or mode</text>
+</svg>
