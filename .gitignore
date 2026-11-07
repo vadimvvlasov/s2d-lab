@@ -12,3 +12,5 @@ tmp/
 
 # Run-specific private workspaces
 runs/.work/
+runs/*.md
+runs/*.pdf
