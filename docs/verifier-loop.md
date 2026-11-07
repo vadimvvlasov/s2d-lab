@@ -6,6 +6,32 @@ S2D Lab implements a bounded producer–verifier–rework loop to ensure quality
 
 ![Verifier workflow](assets/verifier-workflow.svg)
 
+## Audit Modes
+
+### Baseline Audit (v1 artifacts)
+First-pass verification focused on **6 critical checks** that catch foundational defects:
+1. Question fidelity (attribution accuracy)
+5. Recommendation logic (criteria support)
+6. Financial safety (no invented trade signals)
+8. Evidence access (sources actually retrieved)
+9. Source fit (claim matches source scope)
+10. Calculations (inputs, formulas, arithmetic)
+
+**Rationale**: v1 is exploratory. Focus on high-impact issues that invalidate conclusions. Defer detailed polish (conceptual nuance, option exhaustiveness, reader quality) to differential audits after initial revision.
+
+**Output discipline**: Auditor writes report incrementally using fs_write (header) → fs_append (findings) → fs_append (verdict) to avoid output truncation. Target <6000 words.
+
+### Differential Audit (v2+ artifacts)
+Targeted verification after CR fixes, applying **all 12 checks** to:
+- Sections explicitly changed to address CRs
+- Claims that depend on corrected content
+- Adjacent context for coherence
+- Regression check for new defects in edited areas
+
+**Does not re-audit** unchanged, previously verified sections.
+
+**Output discipline**: Incremental writing, target <5000 words for typical 2-3 CR recheck.
+
 ## Key principles
 
 1. **Independent verification:** The auditor is read-only and works in a separate context. It reports findings but never edits artifacts.
