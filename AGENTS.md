@@ -1,7 +1,7 @@
 # S2D Lab — shared agent rules
 
 ## Objective
-Turn conversation history into a high-signal Decision Brief. Optimize for decision usefulness, not transcript completeness or research volume.
+Turn conversation history into a high-signal Conversation Research Recap. Optimize for decision usefulness, not transcript completeness or research volume.
 
 ## Source hierarchy
 1. Original conversation: what participants actually said.
@@ -43,4 +43,4 @@ Research Lead must orchestrate these subagents in order:
 The auditor must receive the original conversation plus the researcher’s evidence/finding packet, not merely the researcher’s polished conclusion. The auditor must work in a separate context and return concise findings by severity. The lead resolves material disagreements and discloses unresolved issues.
 
 ## User-facing output
-Only the final Decision Brief is user-facing. Do not expose verbose intermediate ledgers unless the user explicitly asks for them.
+Only the final Conversation Research Recap is user-facing. Do not expose verbose intermediate ledgers unless the user explicitly asks for them.
