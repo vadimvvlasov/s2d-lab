@@ -1,44 +1,47 @@
-# [Specific, engaging, factual title]
+# [Specific, engaging title reflecting the discussion]
 
-**Обсуждение:** [date / period]  
-**Участники:** [only if known]  
-**Внешняя проверка:** [performed / limited / unavailable]
+**Discussion:** [date/time, if known]  
+**Participants:** [names as supplied]  
+**Research status:** [WEB_ENABLED / NO_EXTERNAL_RESEARCH; key access limits]
 
-## За минуту
-- [What the participants were trying to understand]
-- [Most useful research answer]
-- [Best-fit option or key unresolved trade-off]
+## In brief
+- **The central question:** ...
+- **What we found:** ...
+- **Best-supported option:** ...
+- **What remains uncertain:** ...
 
-## Вопросы, которые действительно стояли перед участниками
+## Questions participants were trying to resolve
 
-### 1. [Question in plain language]
+### Q1 — [plain-language question]
+**Class:** EXPLICIT_QUESTION / IMPLIED_QUESTION / PARTICIPANT_CONCERN  
+**Raised by:** [participant]  
+**Source:** [short quote or timestamp/span]  
+**What they need to decide/understand:** ...
 
-**Кто поднял:** [participant(s); explicit or inferred]
+**Answer:** ...
 
-**Что обсуждали:** [short, fair summary of positions and objections]
+**Options considered**
 
-**Что удалось выяснить:** [direct answer, evidence-linked, jargon explained]
+| Option | Fit to the criteria | Benefits | Trade-offs / risks | Evidence |
+|---|---|---|---|---|
 
-**Варианты:**
+**Best-supported option under these criteria:** ...
 
-| Вариант | Когда подходит | Главный компромисс |
-|---|---|---|
-| A | ... | ... |
-| B | ... | ... |
+**Why it wins:** ...  
+**When another option is better:** ...  
+**Confidence / what could change the conclusion:** ...
 
-**Лучший вариант для этой задачи:** [choice + why it fits better + when another option wins]
+[Repeat for no more than 3 core questions.]
 
-**Уверенность и ограничения:** [status, evidence grade, missing input]
+## Where participants disagree
+[Accurately attribute positions; do not manufacture consensus.]
 
-[Repeat only for next highest-priority question(s), maximum 3.]
+## Additional context found by research
+[Only context that materially improves the answers. Clearly label it as researcher-added, not a participant question.]
 
-## Где участники расходятся
-[Only meaningful differences in expressed views.]
+## What remains open
+[Only unresolved items that could change a decision.]
 
-## Что осталось открытым
-- [Question that could change the conclusion]
-- [Useful follow-up for the group]
-
-## Источники
-- [Source title — publisher — date — link]
+## Sources and verification limits
+[For each key source, show what it supports and whether full text/data, snippet, metadata, or user-supplied material was actually available.]
 
