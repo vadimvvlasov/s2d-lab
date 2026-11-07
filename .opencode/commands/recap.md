@@ -1,18 +1,19 @@
 ---
-description: Analyze the supplied conversation history and produce one concise, independently audited S2D Decision Brief
+description: Extract participants' real questions, research answers and options, and produce one audited participant-facing recap
 agent: research-lead
 ---
 
-Analyze the conversation history supplied in this OpenCode session (pasted text and/or readable attachments).
+Analyze the complete conversation history supplied in this OpenCode session.
 
-Run the complete S2D workflow:
-1. Extract decision-relevant signal with `conversation-analyst`.
-2. Formalize and adaptively research material questions with `quant-researcher`.
-3. Independently audit the original conversation and research evidence with `independent-auditor`.
-4. Resolve material audit findings and produce one concise Decision Brief.
+Identify what participants genuinely want to understand or decide, answer the important questions, compare realistic solutions, and recommend the best fit with reasons and trade-offs.
 
-The original conversation is the source of truth for what participants said. Do not invent missing content. If no readable conversation history is present, ask the user to paste or attach it.
+Run the S2D workflow:
+1. Save the complete source in a run-specific ignored workspace.
+2. Extract attributed explicit/inferred questions and participant viewpoints.
+3. Research the highest-priority questions and compare solution options.
+4. Independently audit against the original conversation and evidence packet.
+5. Produce one concise, readable Conversation Research Recap.
 
-The user-facing output must be one Markdown report only. Keep intermediate agent packets internal. Save the report in `runs/` using the naming rule in the Research Lead instructions, then present it in this session.
+Do not treat every rhetorical question or joke as a research query. Do not confuse personal positions with group decisions. The final report should answer the actual questions, not retell the transcript.
 
-Do not research every claim. Prioritize the few findings most likely to change a decision. Use arXiv, Investopedia, and StockCharts ChartSchool only when relevant. If actual external research tools are unavailable, disclose that and do not fabricate sources.
+Present one Markdown report only. Keep intermediate packets internal. If no readable conversation is present, ask the user to paste or attach it. Never claim a source or independent audit was checked unless it was actually accessed.
