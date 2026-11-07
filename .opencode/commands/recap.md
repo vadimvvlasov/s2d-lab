@@ -1,19 +1,17 @@
 ---
-description: Extract participants' real questions, research answers and options, and produce one audited participant-facing recap
+description: Turn the supplied conversation into a question-driven research recap with compared options and a justified recommendation
 agent: research-lead
 ---
 
-Analyze the complete conversation history supplied in this OpenCode session.
+Analyze the conversation history supplied in this session and produce one **Conversation Research Recap**.
 
-Identify what participants genuinely want to understand or decide, answer the important questions, compare realistic solutions, and recommend the best fit with reasons and trade-offs.
+Follow the workflow:
+1. Extract explicit questions, implied questions, participant concerns, and disagreements. Keep researcher-added context separate.
+2. Research the most important questions, splitting compound questions where they require different concepts or decision rules.
+3. Compare 2–4 realistic options when available, using criteria whose origin is explicit.
+4. Recommend the best-supported option under those criteria, explain why, state its trade-offs, and explain when another option wins. Do not force a winner.
+5. Have the independent auditor review question attribution, source accessibility, calculations, conceptual reasoning, and recommendation logic.
+6. Present one readable report for the participants. Keep intermediate packets internal.
 
-Run the S2D workflow:
-1. Save the complete source in a run-specific ignored workspace.
-2. Extract attributed explicit/inferred questions and participant viewpoints.
-3. Research the highest-priority questions and compare solution options.
-4. Independently audit against the original conversation and evidence packet.
-5. Produce one concise, readable Conversation Research Recap.
-
-Do not treat every rhetorical question or joke as a research query. Do not confuse personal positions with group decisions. The final report should answer the actual questions, not retell the transcript.
-
-Present one Markdown report only. Keep intermediate packets internal. If no readable conversation is present, ask the user to paste or attach it. Never claim a source or independent audit was checked unless it was actually accessed.
+Do not invent trading levels or executable trade signals. Do not claim snippet-only or inaccessible sources were fully verified. If the original chat or relevant images are unavailable, disclose the missing inputs.
+Save the report under `runs/` with the date-based filename defined in the Research Lead instructions.
