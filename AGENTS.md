@@ -64,3 +64,9 @@ Only the final Conversation Research Recap is user-facing. Do not expose verbose
 - Every review identifies exact artifact version
 - Original conversation stored in `runs/.work/<run-id>/source.md` and accessible to all Auditor invocations
 - Run state persists: run_id, artifact versions, cycle counts, CR statuses, verdicts, release eligibility
+
+## Tooling
+
+- Use `uv` for Python tooling, not direct pip/venv.
+  - One-off scripts with dependencies: `uv run --with <pkg> script.py`
+  - Persistent environments: `uv venv`
