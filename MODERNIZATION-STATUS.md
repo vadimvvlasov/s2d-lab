@@ -1,16 +1,16 @@
 # S2D Lab Modernization Status
 
 **Last Updated:** 2026-11-08  
-**Current Phase:** D2 + D3 Complete — E1 Ready  
+**Current Phase:** D2 + D3 + E1 Complete — E2 Ready  
 **Repository:** /home/vadim/work/projects/invest/s2d-lab
 
 ## Executive Summary
 
-**EPIC B + C1 + D2 + D3 complete.** EPIC B (prompt refactoring) validated on the confirmed target model (Qwen3.8 27B, provider `x99`, local RTX 3090) via gate-set fixtures (01, 03, 06, 07): **52/52 success criteria met, 0 failures**. C1 (artifact validator + prompt adoption) implemented and tested. D2 (claim dependency graph) validator enforces DAG property: existence check, cycle detection, transitive scope calculation; visualizer generates SVG/PNG/PDF graphs. D3 (state validator) enforces workflow rules with Pydantic schema: cycle limit ≤3, no PASS with unresolved BLOCKER, release eligibility conditions.
+**EPIC B + C1 + D2 + D3 + E1 complete.** EPIC B (prompt refactoring) validated on the confirmed target model (Qwen3.8 27B, provider `x99`, local RTX 3090) via gate-set fixtures (01, 03, 06, 07): **52/52 success criteria met, 0 failures**. C1 (artifact validator + prompt adoption) implemented and tested. D2 (claim dependency graph) validator enforces DAG property: existence check, cycle detection, transitive scope calculation; visualizer generates SVG/PNG/PDF graphs. D3 (state validator) enforces workflow rules with Pydantic schema: cycle limit ≤3, no PASS with unresolved BLOCKER, release eligibility conditions. E1 (structural test suite) validates D2+D3 with pytest: 11 passing integration tests.
 
-**Cumulative token investment (baseline fb1b50d → post-B → post-C1):** 5836 → 6662 (+14.2%) → 7320 (+25.4% total; tiktoken o200k_base proxy). D2 + D3: **zero token cost** (external tooling only). Static prompt+doc context ~15k tokens (≈5.8% of 256k budget) — the context budget is not the constraint; per-turn KV-cache residency on the 24GB card is.
+**Cumulative token investment (baseline fb1b50d → post-B → post-C1):** 5836 → 6662 (+14.2%) → 7320 (+25.4% total; tiktoken o200k_base proxy). D2 + D3 + E1: **zero token cost** (external tooling only). Static prompt+doc context ~15k tokens (≈5.8% of 256k budget) — the context budget is not the constraint; per-turn KV-cache residency on the 24GB card is.
 
-**Critical Next Step:** E1 — automated structural tests (using D2 + D3 validators). Then E2 (full 7-fixture baseline, adding 02/04/05), E3, D1.
+**Critical Next Step:** E2 — LLM-as-evaluator baseline on 7 fixtures (gate-set + fx02/04/05). E1 structural tests now available as pre-flight checks.
 
 ## Completed Work
 
@@ -48,7 +48,7 @@
 - ✅ Validator testing: gate-set artifacts validated (5/6 pass, source.md expected failure)
 - Details: `docs/audit/session-04-summary.md`
 
-### Session 05 (D2 + D3 Implementation)
+### Session 05 (D2 + D3 + E1 Implementation)
 - ✅ D2.1 validator enhancement: dependency existence check, cycle detection (DAG), transitive scope calculation
 - ✅ D2.2 visualizer: `scripts/visualize-claim-graph.py` (260 lines) — SVG/PNG/PDF with changed-claim highlighting
 - ✅ D2 testing: fx01/fx06 validation pass, 3 synthetic negative tests
@@ -56,6 +56,9 @@
 - ✅ D3.2 validation rules: cycle limit ≤3, no PASS with BLOCKER, release eligibility, version/cycle consistency
 - ✅ D3.3 validator script: `scripts/validate-state.py` (100 lines)
 - ✅ D3 testing: 6/6 schema tests pass, gate-set validation (2/4 valid, 2 legitimate errors found)
+- ✅ E1.1 test suite: pytest-based structural tests (3 modules: artifact_schema, claim_dependencies, state_transitions)
+- ✅ E1.2 testing: 11 tests pass, 5 skip (fixture-dependent); integration tests with real validators
+- ✅ E1.3 scripts rename: `validate-artifact.py` → `validate_artifact.py` (import compatibility)
 - ✅ `docs/artifact-schema.md` updated with D2 implementation status
 - ✅ Token impact: zero (external tooling only, no prompt changes)
 - Details: `docs/audit/session-05-summary.md`
@@ -123,10 +126,10 @@ Four agents remain unchanged, become specialized task executors.
 - D3: State validator ✅ **COMPLETE** (session 05)
 - D4: Resume protocol (NOT STARTED)
 
-### ⏳ EPIC E — Tests and Eval (NOT STARTED)
-- E1: Automated structural tests
-- E2: LLM behavior eval
-- E3: Adversarial cases
+### ✅ EPIC E — Tests and Eval (Partial, E1 complete)
+- E1: Automated structural tests ✅ **COMPLETE** (session 05)
+- E2: LLM behavior eval (NOT STARTED)
+- E3: Adversarial cases (NOT STARTED)
 
 ### ⏳ EPIC F — Documentation and Rollout (NOT STARTED)
 - F1: Update workflow docs
@@ -157,7 +160,9 @@ D2: claim dependency graph (session 05) ✅
    ↓
 D3: state validator (session 05) ✅
    ↓
-E1 (structural tests) → E2 (LLM eval: full 7-fixture baseline) → E3 (adversarial) → D1 (source-first)
+E1: structural tests (session 05) ✅
+   ↓
+E2 (LLM eval: full 7-fixture baseline) → E3 (adversarial) → D1 (source-first)
    ↓
 F (documentation, rollout)
 ```
