@@ -13,33 +13,47 @@ Standardized artifact schemas enable:
 
 ## Common Frontmatter Fields
 
-All artifacts use YAML frontmatter + Markdown body format:
+All artifacts use YAML frontmatter + Markdown body format.
+
+### Valid Concrete Example
 
 ```yaml
 ---
-artifact_type: "question_map" | "research_packet" | "verification_report" | "final_report"
-version: "v1" | "v2" | "v3" | "v4"
-run_id: "<YYYY-MM-DD-short-slug>"
-created_by: "conversation-analyst" | "quant-researcher" | "independent-auditor" | "research-lead"
-created_at: "YYYY-MM-DDTHH:MM:SSZ"
+artifact_type: "question_map"
+version: "v1"
+run_id: "2026-11-08-gold-etf"
+created_by: "conversation-analyst"
+created_at: "2026-11-08T14:30:00Z"
 source_refs:
-  - path: "runs/.work/<run-id>/source.md"
+  - path: "runs/.work/2026-11-08-gold-etf/source.md"
     type: "conversation"
-  - path: "runs/.work/<run-id>/01-question-map-v1.md"  # if applicable
-    type: "question_map"
-    version: "v1"
+    sha256: "abc123..."  # optional
 ---
 ```
 
-### Field Descriptions
+### Schema Constraints (to be enforced by validator)
 
-- **artifact_type** (required): Type discriminator for validation
-- **version** (required): Explicit version (v1, v2, v3, v4). Max v4 per cycle limit.
-- **run_id** (required): Unique run identifier for grouping artifacts
-- **created_by** (required): Agent that produced this artifact
-- **created_at** (required): ISO 8601 timestamp
-- **source_refs** (required): List of input artifacts/sources used to create this artifact
-  - Each ref: `path`, `type`, optionally `version`
+**artifact_type** (string, required):
+- Allowed values: `"question_map"`, `"research_packet"`, `"verification_report"`, `"final_report"`
+
+**version** (string, required):
+- Allowed values: `"v1"`, `"v2"`, `"v3"`, `"v4"`
+- Must not skip versions (v1 → v3 without v2 is invalid)
+
+**run_id** (string, required):
+- Format: `YYYY-MM-DD-short-slug`
+- Must be consistent across all artifacts in the same run
+
+**created_by** (string, required):
+- Allowed values: `"conversation-analyst"`, `"quant-researcher"`, `"independent-auditor"`, `"research-lead"`
+
+**created_at** (string, required):
+- Format: ISO 8601 timestamp `YYYY-MM-DDTHH:MM:SSZ`
+
+**source_refs** (array, required):
+- Each ref must have `path` and `type`
+- `path` must be resolvable at validation time
+- Optional: `version`, `sha256` for integrity
 
 ## Question Map Schema
 
@@ -163,18 +177,41 @@ resolution_notes: |
 
 ### Claims
 
-**Claim C1.1** — [Claim statement]
-- **Claim ID:** C1.1
+**Claim Q1.C1** — [Claim statement]
+- **Claim ID:** Q1.C1
 - **Type:** FACT | INTERPRETATION | HYPOTHESIS | RECOMMENDATION
-- **Evidence:** [Source + access status]
+- **Evidence IDs:** [E1, E2] (references to evidence list below)
 - **Confidence:** HIGH | MEDIUM | LOW
-- **Depends on:** [] (list of claim IDs this claim relies on, empty if independent)
+- **Depends on:** [] (empty if independent, or list like ["Q1.C1"] if depends on other claims)
 
-**Claim C1.2** — [Another claim]
-- **Claim ID:** C1.2
-- **Depends on:** ["C1.1"] (this recommendation depends on fact C1.1)
+**Claim Q1.C2** — [Another claim]
+- **Claim ID:** Q1.C2
+- **Type:** RECOMMENDATION
+- **Evidence IDs:** [E1]
+- **Depends on:** ["Q1.C1"] (this recommendation depends on fact Q1.C1)
 
 [Continue for all material claims]
+
+### Evidence
+
+**Evidence E1:** [Short description]
+- **Evidence ID:** E1
+- **Type:** PRIMARY_DOCUMENT | OFFICIAL_DATA | SEARCH_RESULT | USER_SUPPLIED | CALCULATION
+- **Source:** [Title or URL]
+- **Access status:** FULL_TEXT_OPENED | OFFICIAL_DATA_OR_API_RETRIEVED | SEARCH_SNIPPET_ONLY | METADATA_ONLY | INACCESSIBLE | USER_SUPPLIED
+- **Source ref:** lines X-Y OR URL with anchor
+- **Claims supported:** [Q1.C1, Q1.C2]
+- **Date accessed:** 2026-11-08
+- **Content hash (optional):** sha256:abc123...
+- **Key excerpt (if useful):** "[short quote, not full text]"
+
+**Evidence E2:** [Calculation result]
+- **Evidence ID:** E2
+- **Type:** CALCULATION
+- **Formula:** [explicit formula]
+- **Inputs:** [list with sources]
+- **Result:** [value with units]
+- **Claims supported:** [Q1.C1]
 
 ### Calculations
 
@@ -215,14 +252,21 @@ Per question:
 
 ### Claim ID Convention
 
-Format: `Q{question_number}.{claim_number}`
+**Format:** `Q{question}.C{claim}`
 
-Examples:
-- C1.1 — First claim for Q1
-- C1.2 — Second claim for Q1
-- C2.1 — First claim for Q2
+**Examples:**
+- `Q1.C1` — First claim for question Q1
+- `Q1.C2` — Second claim for question Q1
+- `Q2.C1` — First claim for question Q2
 
-Claim IDs are **stable**: If Q1 has claims C1.1, C1.2, C1.3 in v1, and v2 adds C1.4, the original IDs don't change.
+**Rules:**
+- Stable across revisions within a run
+- No reuse of retired IDs (if claim removed, ID is retired)
+- Unique within a run
+- `depends_on` must reference existing claims in the same run
+- Self-dependency rejected (Q1.C1 cannot depend on Q1.C1)
+- Circular dependencies rejected (Q1.C1 → Q1.C2 → Q1.C1)
+- Metadata preserves question and artifact version for each claim
 
 ## Verification Report Schema
 
@@ -342,10 +386,54 @@ artifacts:
 - Source paths must be resolvable at validation time
 
 ### Claim ID Rules
-- Claim IDs must be stable across versions (don't renumber existing claims)
+- Format: `Q{question}.C{claim}` (e.g., Q1.C1, Q2.C3)
+- Stable across versions (don't renumber existing claims)
 - New claims get next available number
 - Removed claims: ID retired (not reused)
-- `depends_on` must reference valid claim IDs from same or prior version
+
+### Dependency Validation (Critical for Differential Audits)
+
+The validator must verify:
+
+1. **Existence:** Referenced claims exist in same run_id
+   ```python
+   for claim_id in claim.depends_on:
+       assert claim_id in all_claims_in_run
+   ```
+
+2. **No self-reference:** Claim cannot depend on itself
+   ```python
+   assert claim.id not in claim.depends_on
+   ```
+
+3. **No cycles:** Dependency graph must be acyclic (DAG)
+   ```python
+   # Detect cycles using depth-first search
+   assert not has_cycle(dependency_graph)
+   ```
+
+4. **No dangling references:** All referenced claims must be current (not retired)
+   ```python
+   for dep_id in claim.depends_on:
+       assert dep_id not in retired_claim_ids
+   ```
+
+5. **Scope propagation:** Changed claim dependencies included in differential recheck
+   ```python
+   def get_recheck_scope(changed_claim_ids):
+       scope = set(changed_claim_ids)
+       # Add all claims that depend on changed claims (transitive)
+       for claim_id in all_claims:
+           if any(dep in scope for dep in claim.depends_on):
+               scope.add(claim_id)
+       return scope
+   ```
+
+### Evidence Reference Rules
+- Evidence IDs unique within artifact
+- All evidence IDs referenced in claims must exist in evidence section
+- Access status must match one of allowed values
+- Inaccessible sources (403/404) cannot have status FULL_TEXT_OPENED
 
 ## Implementation Notes
 
@@ -366,6 +454,20 @@ Existing artifacts without frontmatter are grandfathered. New artifacts created 
 
 ---
 
-**Created:** 2026-11-08 (Task C1)  
-**Status:** Schema defined, implementation in progress  
-**Next:** Update agent prompts to produce compliant artifacts
+**Created:** 2026-11-08 (Task C1 partial)  
+**Status:** DRAFT SCHEMA — prompt adoption and validator implementation NOT complete
+
+**Unresolved for C1 completion:**
+1. Update agent prompts to produce schema-compliant frontmatter
+2. Implement Python validator script (`scripts/validate-artifact.py`)
+3. Create JSON Schema or Pydantic models for machine validation
+4. Test claim dependency cycle detection
+5. Test evidence reference resolution
+6. Validate on actual artifacts produced by refactored B3/B4 prompts
+
+**Do not treat this as production-ready until:**
+- Validator script exists and passes structural tests
+- At least one complete fixture run produces valid artifacts
+- Dependency graph operations tested (recheck scope calculation)
+
+**Current priority:** Complete B3/B4 prompt refactoring, validate on fixtures, THEN implement C1 validator.
