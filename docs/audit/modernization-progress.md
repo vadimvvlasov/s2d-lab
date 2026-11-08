@@ -308,3 +308,74 @@ Recommended sequence:
 
 **Last Updated:** 2026-11-08 after completing B1, B2  
 **Next Milestone:** C1 (unified handoff format with artifact schemas)
+
+
+#### B3. Quant Researcher: Adaptive Workflow
+**Status:** COMPLETE (prompt refactored, behavioral validation pending)  
+**Commit:** bea255c
+
+Implemented per Session 02 requirements:
+- Adaptive workflow: option comparison/calculations conditional on question type
+- Claim IDs: Q{question}.C{claim} format with stable IDs
+- Evidence IDs: E1, E2, ... with type, source, access status, supported claims
+- Dependencies: explicit depends_on field
+- Structured frontmatter (YAML) with source_refs, version, run_id
+- Compact output: direct answers, no research diary
+- Stopping rule: research until sufficient OR access limited
+- Safety preserved: no invented trade signals
+
+**Token change:** 969 → 1249 (+280 tokens, +28.9%)  
+**Justification:** Structured output enables C1/D2 implementation
+
+#### B4. Conversation Analyst: Source Anchors
+**Status:** COMPLETE (prompt refactored, behavioral validation pending)  
+**Commit:** 0cd5f93
+
+Implemented per Session 02 requirements:
+- Stable source anchors: line span, turn ID, timestamp+speaker
+- Every question/constraint MUST have resolvable anchor
+- Chunked extraction procedure for long conversations
+- Compound question splitting required
+- Deduplicate semantically equivalent questions
+- Preserve minority/dissenting viewpoints
+- Structured frontmatter (YAML) with metadata
+- Compact question index (not conversation summary)
+
+**Token change:** 570 → 1079 (+509 tokens, +89.3%)  
+**Justification:** Source anchors CRITICAL for audit verification
+
+#### B2 Follow-up: Auditor Compactness and Coverage
+**Status:** COMPLETE (enhanced output contract and coverage)  
+**Commit:** 7401fd3
+
+Enhanced per Session 02 requirements:
+- Token targets: ~1500-2000 baseline, ~500-1000 differential (targets, not limits)
+- Artifact-aware checks: 10-12 checks depending on artifact (was: always 6)
+  - Question Map/Research Packet: checks 1,2,3,5,6,7,8,9,10,12
+  - Final Report: additionally 4,11 (option coverage, reader quality)
+- Claim ID integration: findings reference question_id/claim_id
+- Checklist accessibility: must confirm `docs/audit-checklist.md` accessible
+- Structured output: one finding = ID, severity, category, owner, claim_id, source_ref, defect, change, criteria, scope
+- Recheck scope includes dependent claims via depends_on
+
+**Token change:** 663 → 1055 (+392 tokens, +59.1%)  
+**Justification:** Artifact-aware checks and claim tracking
+
+### 📊 Token Summary After EPIC B Complete
+
+| Agent | Baseline | Post-B1/B2 | Post-B3/B4 | Net Change | % |
+|---|---|---|---|---|---|
+| conversation-analyst | 570 | 570 | **1079** | +509 | +89.3% |
+| independent-auditor | 1394 | 663 | **1055** | -339 | -24.3% |
+| quant-researcher | 969 | 969 | **1249** | +280 | +28.9% |
+| research-lead | 1401 | 1193 | **1193** | -208 | -14.8% |
+| **TOTAL** | **4334** | **3395** | **4576** | **+242** | **+5.6%** |
+
+**Key Insight:** Net +5.6% token investment gains foundational structure for C/D phases:
+- Claim IDs and dependencies (enables D2 dependency tracking)
+- Evidence IDs (enables independent verification)
+- Stable source anchors (enables audit traceability)
+- Structured frontmatter (enables C1 validation)
+- Adaptive workflows (reduces unnecessary research)
+
+Token increase justified — these are prerequisites for context-aware orchestration.
