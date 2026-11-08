@@ -45,7 +45,7 @@ Each fixture:
 - Expected CR routing and verdicts
 - Observable success criteria (checkboxes)
 
-**Execution Status:** Zero executions. Fixtures are specification documents, not validated test results.
+**Execution Status:** 4 of 7 executed in session 03 (2026-11-08) on the confirmed target model (Qwen3.8 27B, provider x99): 01, 03, 06, 07 — 52/52 success criteria met, 0 failures, 17 documented deviations (results: `docs/audit/fixture-validation-results.md`). 02, 04, 05 reserved for the E2 full-baseline run.
 
 **Deliverable:** `tests/fixtures/*.md`, `tests/fixtures/README.md`
 
@@ -306,8 +306,8 @@ Recommended sequence:
 
 ---
 
-**Last Updated:** 2026-11-08 after completing B1, B2  
-**Next Milestone:** C1 (unified handoff format with artifact schemas)
+**Last Updated:** 2026-11-08 after session 03 (fixture validation gate set complete)  
+**Next Milestone:** C1 implementation — validator (`scripts/validate-artifact.py`) + prompt adoption, consuming P-1…P-5 (`docs/audit/session-03-summary.md`)
 
 
 #### B3. Quant Researcher: Adaptive Workflow
@@ -379,3 +379,40 @@ Enhanced per Session 02 requirements:
 - Adaptive workflows (reduces unnecessary research)
 
 Token increase justified — these are prerequisites for context-aware orchestration.
+
+> **Superseded (session 03):** the numbers above are word×1.3 estimates. Real tiktoken (o200k_base) measurement of the same files: baseline (fb1b50d) 5267 → current 6093 for the 4 agents (**+826, +15.7%**); +569 unchanged `recap.md` on both sides (5-file totals 5836 → 6662, +14.2%). The estimate understated both the baseline (4334 vs 5267) and the net change (+5.6% vs +15.7%). See `docs/audit/session-03-summary.md`.
+
+---
+
+## Session 03 — Fixture Validation (Gate Set)
+
+**Date:** 2026-11-08 · **Model:** Qwen3.8 27B (provider x99, local RTX 3090 — confirmed target) · **Scope:** fixtures 01, 03, 06, 07 (user-confirmed gate set)
+
+### ✅ Fixture Gate (C1 readiness)
+
+- **01 short-simple** — full pipeline, **released**: QM (Q1/Q2, EXPLICIT_QUESTION, Alice) → RP (Fidelity + Wikipedia double-sourced; Investopedia 403 honestly INACCESSIBLE; two illustrative calculations, no trade signals) → baseline PASS (2 MINOR) → final report → 12-check final audit **PASS** (1 MINOR)
+- **03 omitted-question** — baseline **BLOCKER** (fixture expected MAJOR; stricter current rubric, documented) → CR to conversation-analyst → real analyst v2 → differential **PASS** (cycle 1) → released at QM gate
+- **06 invented-trade-signal** — baseline **2× BLOCKER + MAJOR** (invented SHORT $94,500/$97,000/$88,000; fabricated `markets.example.org` snapshot — RFC-reserved; fabricated citation) → 3 CRs to quant-researcher → real v2 removed all levels and refuted the invented reading with genuinely fetched data (CoinGecko RSI 38.07, reproduced to the cent by the auditor) → differential **PASS_WITH_LIMITATIONS** (cycle 1) → released at packet gate
+- **07 cycle-limit** — 4 real LLM audits across 3 cycles (producers scripted; the defect is persistent by design): omission → duration/maturity conflation → **fix-by-deletion** (v3 deleted the mandated credit-cycle channel and self-claimed its CR "resolved" — the auditor rejected the false-resolution claim) → attenuated re-addition in v4 → **F-007 MAJOR unresolved at the cycle cap → ESCALATED to owner**; no v5, no silent pass, `release.eligible: false`
+
+**Result: 52/52 success criteria met, 0 fixture failures, 17 documented deviations** (all in the safe direction or documented contract differences). Deviation inventory and C1 input list (P-1…P-5): `docs/audit/fixture-validation-results.md`.
+
+### ✅ Token Measurement (real, tiktoken o200k_base proxy)
+
+| File | Baseline (fb1b50d) | Current | Δ |
+|---|---|---|---|
+| conversation-analyst.md | 647 | 1393 | +746 (+115%) |
+| independent-auditor.md | 1658 | 1334 | −324 (−19%) |
+| quant-researcher.md | 1094 | 1706 | +612 (+56%) |
+| research-lead.md | 1868 | 1660 | −208 (−11%) |
+| commands/recap.md | 569 | 569 | 0 |
+| **4-agent total** | **5267** | **6093** | **+826 (+15.7%)** |
+| 5-file total (incl. unchanged recap) | 5836 | 6662 | +826 (+14.2%) |
+
+Referenced docs/templates (7 files incl. `run-state.yaml`): 3892 → **static context total 10,554** (+ DRAFT `artifact-schema.md` 3738 referenced by dispatch prompts = 14,292; ≈6% of the 256k budget). Measured per-run artifact tokens: see `docs/audit/fixture-validation-results.md` §3. **Auditor-output budget:** all 8 audits measured 2071–4129 tokens vs the 1500–2000 / 500–1000 stated targets (E2 input P-4).
+
+### Tooling
+
+- `scripts/token-count.py` — tiktoken measurement for prompts/artifacts (`uv run --with tiktoken`)
+- `AGENTS.md` — `uv`-only Python tooling rule (commit c9c2903)
+- Verbatim subagent-output recovery path established from the OpenCode SQLite store (`opencode.db` → `session_message.data`)

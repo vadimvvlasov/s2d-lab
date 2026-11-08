@@ -116,7 +116,7 @@ When adding fixtures:
 
 **Created:** 2026-11-08 (Task A2)  
 **Total Fixtures:** 7  
-**Executed:** 0 (manual execution not yet performed)  
+**Executed:** 4 of 7 (01, 03, 06, 07 — session 03, 2026-11-08, on the target model Qwen3.8 27B / provider x99; 52/52 success criteria met, 0 failures, 17 documented deviations — results in `docs/audit/fixture-validation-results.md`; 02, 04, 05 reserved for the E2 full-baseline run)  
 **Automated Harness:** Not implemented (out of scope for initial modernization)
 
 These fixtures serve as **specification** for correct system behavior and **regression protection** during modernization.
