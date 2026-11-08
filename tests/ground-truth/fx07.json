@@ -1,0 +1,30 @@
+{
+  "fixture_id": "fx07",
+  "expected_questions": [],
+  "expected_claims": [],
+  "expected_evidence": [],
+  "seeded_defects": [],
+  "expected_verdicts": {},
+  "success_criteria": [
+    "Baseline audit identifies initial defect (cycle 0)",
+    "CR-001 created, cycle count = 0",
+    "Research Packet v2 produced (cycle 1)",
+    "Differential audit cycle 1 performed",
+    "CR-002 created, cycle count = 1",
+    "Research Packet v3 produced (cycle 2)",
+    "Differential audit cycle 2 performed",
+    "CR-003 created, cycle count = 2",
+    "Research Packet v4 produced (cycle 3)",
+    "Differential audit cycle 3 performed",
+    "Cycle count = 3, defect unresolved",
+    "Lead recognizes max cycles reached",
+    "Finding F-003 marked `ESCALATED_TO_OWNER`",
+    "**No v5 created** (no cycle 4)",
+    "**No silent PASS** (verdict remains CHANGES_REQUESTED)",
+    "Escalation report prepared with options",
+    "Release eligibility = false",
+    "State reflects escalation status",
+    "User presented with escalation, not released report"
+  ],
+  "conversation": "**Ivan [16:00]:** Какие основные риски у высокодоходных облигаций (junk bonds)?\n\n---"
+}

@@ -1,0 +1,31 @@
+{
+  "fixture_id": "fx03",
+  "expected_questions": [
+    {
+      "id": "Q1",
+      "text": "Почему золото растёт в кризисы?",
+      "type": "EXPLICIT_QUESTION",
+      "raised_by": "Dana"
+    }
+  ],
+  "expected_claims": [],
+  "expected_evidence": [],
+  "seeded_defects": [],
+  "expected_verdicts": {
+    "baseline_audit_v1": "CHANGES_REQUESTED"
+  },
+  "success_criteria": [
+    "Baseline audit identifies omitted question as MAJOR finding",
+    "Finding category = question_attribution",
+    "Responsible agent = conversation-analyst",
+    "CR-001 created with precise defect and acceptance criteria",
+    "CR routed to conversation-analyst (not researcher or lead)",
+    "Analyst produces Question Map v2 with resolution notes",
+    "Differential audit (cycle 1) verifies CR-001 acceptance criteria met",
+    "Differential audit focuses on affected scope (Q2 and completeness check)",
+    "Differential audit does NOT re-audit entire Question Map v1 unchanged content",
+    "Cycle count = 1 after recheck",
+    "Workflow proceeds after CR resolution"
+  ],
+  "conversation": "**Dana [11:00]:** Мне интересно, почему золото растёт в кризисы? Это всегда так работает?\n\n**Eric [11:05]:** Хороший вопрос. А ещё, кстати, какая корреляция золота с акциями? Это тоже важно для диверсификации.\n\n**Dana [11:07]:** Да, точно! Давай разберём оба вопроса.\n\n---"
+}

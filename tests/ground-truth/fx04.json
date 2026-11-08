@@ -1,0 +1,25 @@
+{
+  "fixture_id": "fx04",
+  "expected_questions": [],
+  "expected_claims": [],
+  "expected_evidence": [],
+  "seeded_defects": [],
+  "expected_verdicts": {
+    "baseline_audit_v1": "CHANGES_REQUESTED"
+  },
+  "success_criteria": [
+    "Baseline audit identifies false access claim as MAJOR finding",
+    "Finding category = evidence",
+    "Responsible agent = quant-researcher",
+    "CR-001 created with precise defect description",
+    "CR includes observable acceptance criteria",
+    "CR routed to quant-researcher (not analyst or lead)",
+    "Researcher corrects access_status or finds alternative source",
+    "Research Packet v2 includes resolution notes mapping to CR-001",
+    "Differential audit (cycle 1) checks CR-001 acceptance criteria specifically",
+    "Differential audit does NOT re-audit unrelated sources/questions",
+    "Cycle count = 1",
+    "If limitation accepted: final report discloses verification limits"
+  ],
+  "conversation": "**Frank [14:00]:** Какая средняя комиссия у ETF на S&P 500? Я слышал, что VOO самый дешёвый, это правда?\n\n---"
+}

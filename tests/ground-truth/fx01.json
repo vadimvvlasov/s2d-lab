@@ -1,0 +1,30 @@
+{
+  "fixture_id": "fx01",
+  "expected_questions": [
+    {
+      "id": "Q1",
+      "text": "Что такое дивидендная доходность и как её рассчитывают?",
+      "type": "EXPLICIT_QUESTION",
+      "raised_by": "Alice"
+    }
+  ],
+  "expected_claims": [],
+  "expected_evidence": [],
+  "seeded_defects": [],
+  "expected_verdicts": {
+    "baseline_audit_v1": "PASS"
+  },
+  "success_criteria": [
+    "Question classified as EXPLICIT_QUESTION",
+    "Attribution to Alice",
+    "Definition retrieved from authoritative source",
+    "Calculation formula shown",
+    "Example with inputs, formula, result, units",
+    "No invented trading signals",
+    "Source access status recorded",
+    "Baseline audit completes in <6000 words",
+    "Final report length appropriate (300-500 words)",
+    "Final audit PASS or PASS_WITH_LIMITATIONS (no BLOCKER/MAJOR)"
+  ],
+  "conversation": "**Alice [10:15]:** Привет! Я хочу понять, что такое дивидендная доходность и как её рассчитывают?\n\n**Bob [10:17]:** Хороший вопрос. Я тоже не уверен в формуле.\n\n**Alice [10:18]:** Можешь найти определение и простой пример расчёта?\n\n---"
+}

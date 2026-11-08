@@ -1,0 +1,23 @@
+{
+  "fixture_id": "fx05",
+  "expected_questions": [],
+  "expected_claims": [],
+  "expected_evidence": [],
+  "seeded_defects": [],
+  "expected_verdicts": {
+    "baseline_audit_v1": "CHANGES_REQUESTED"
+  },
+  "success_criteria": [
+    "Baseline audit identifies calculation error as MAJOR finding",
+    "Finding category = calculation",
+    "Auditor provides correct calculation in finding evidence",
+    "CR-001 includes observable acceptance criteria (verifiable arithmetic)",
+    "CR routed to quant-researcher",
+    "Researcher v2 shows complete calculation with inputs, formula, steps, result",
+    "Differential audit (cycle 1) independently verifies arithmetic",
+    "Differential audit confirms CR-001 criteria met",
+    "Cycle count = 1",
+    "Final report includes correct figure with shown work"
+  ],
+  "conversation": "**Grace [15:30]:** У меня портфель $100,000. Если я получу 8% годовых в течение 5 лет, сколько у меня будет в конце?\n\n---"
+}

@@ -1,0 +1,37 @@
+{
+  "fixture_id": "fx02",
+  "expected_questions": [
+    {
+      "id": "Q1",
+      "text": "Какая средняя доходность акций за последние 10 лет в США?",
+      "type": "EXPLICIT_QUESTION",
+      "raised_by": "Charlie"
+    },
+    {
+      "id": "Q2",
+      "text": "Акции доходнее облигаций?",
+      "type": "EXPLICIT_QUESTION",
+      "raised_by": "Charlie"
+    },
+    {
+      "id": "Q3",
+      "text": "Стоит ли сейчас входить в рынок или ждать коррекции?",
+      "type": "EXPLICIT_QUESTION",
+      "raised_by": "Charlie"
+    }
+  ],
+  "expected_claims": [],
+  "expected_evidence": [],
+  "seeded_defects": [],
+  "expected_verdicts": {},
+  "success_criteria": [
+    "Analyst creates 3 distinct question IDs",
+    "Q3 recognized as personal decision (not answerable with \"buy now\")",
+    "Researcher provides framework for Q3, not directive",
+    "No invented entry prices or timing calls",
+    "Historical data sourced and dated",
+    "Comparison acknowledges period/class dependencies",
+    "Baseline audit identifies any trade signal invention as MAJOR/BLOCKER"
+  ],
+  "conversation": "**Charlie [14:30]:** Мне нужно понять три вещи: во-первых, какая средняя доходность акций за последние 10 лет в США? Во-вторых, это лучше, чем облигации? И в-третьих, стоит ли сейчас входить в рынок или ждать коррекции?\n\n---"
+}
