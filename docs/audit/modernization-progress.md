@@ -109,15 +109,20 @@ Streamlined `independent-auditor.md` to reference checklist for differential aud
 ### EPIC C — Context Architecture
 
 #### C1. Unified Handoff Format
-**Status:** PARTIAL (schema draft created, prompt adoption and validation not implemented)  
-**Commit:** 558c19e  
+**Status:** ✅ COMPLETE (validator + schema conformance, session 04)  
+**Commits:** 869f84f (validator), f2884f8 (P-1/P-2 fixes), e2b93dc (prompt adoption)  
 **Priority:** HIGH (foundation for context control)
 
-Tasks:
-- Add artifact schema with version, run_id, created_by, source_refs
-- Add claim_id field to Research Packet structure
-- Support JSON/YAML frontmatter + Markdown body
-- Validate required fields
+Completed (session 04):
+- ✅ Artifact schema with version, run_id, created_by, source_refs (`docs/artifact-schema.md` VALIDATED)
+- ✅ Claim IDs (Q<n>.C<m>), Evidence IDs (E<n>), source anchors with line/turn spans
+- ✅ YAML frontmatter + Markdown body
+- ✅ Validator enforces required fields (`scripts/validate-artifact.py`, 669 lines)
+- ✅ All 4 agent prompts adopted schema requirements
+- ✅ P-1 resolved: SECONDARY_DOCUMENT added to Evidence Type enum, CALCULATION access_status rule
+- ✅ P-2 resolved: `docs/audit-checklist.md` synced (10-check baseline, 12-check final/differential)
+- ✅ P-3 resolved: validator CR cross-check + auditor prompt warning (false-resolution detection)
+- ✅ P-4/P-5 documented: audit output budget (E2 input), verbatim recovery path (opencode.db)
 
 #### C2. Source Index
 **Status:** NOT STARTED  
@@ -289,8 +294,8 @@ Per handoff document, the following are intentionally out of scope:
 ## Next Session Actions
 
 Recommended sequence:
-1. **C1** — Unified handoff format (foundation)
-2. **D2** — Claim dependency graph (enables proper differential audit)
+1. ~~**C1** — Unified handoff format (foundation)~~ ✅ **COMPLETE** (session 04)
+2. **D2** — Claim dependency graph (enables proper differential audit) ← **NEXT**
 3. **D3** — State schema + validator (deterministic control)
 4. **D1** — Source-first audit (independent verification)
 5. **C2** — Source index (efficient access)
@@ -306,8 +311,8 @@ Recommended sequence:
 
 ---
 
-**Last Updated:** 2026-11-08 after session 03 (fixture validation gate set complete)  
-**Next Milestone:** C1 implementation — validator (`scripts/validate-artifact.py`) + prompt adoption, consuming P-1…P-5 (`docs/audit/session-03-summary.md`)
+**Last Updated:** 2026-11-08 after session 04 (C1 complete)  
+**Next Milestone:** D2 — claim dependency graph (validator + visualizer)
 
 
 #### B3. Quant Researcher: Adaptive Workflow
@@ -416,3 +421,116 @@ Referenced docs/templates (7 files incl. `run-state.yaml`): 3892 → **static co
 - `scripts/token-count.py` — tiktoken measurement for prompts/artifacts (`uv run --with tiktoken`)
 - `AGENTS.md` — `uv`-only Python tooling rule (commit c9c2903)
 - Verbatim subagent-output recovery path established from the OpenCode SQLite store (`opencode.db` → `session_message.data`)
+
+---
+
+## Session 04 — C1 Implementation
+
+**Date:** 2026-11-08 · **Scope:** C1 validator + prompt adoption, consuming P-1…P-5 from session 03
+
+### ✅ C1 — Artifact Validator + Prompt Adoption
+
+**Status:** COMPLETE  
+**Commits:** 869f84f (validator), f2884f8 (P-1/P-2 fixes), e2b93dc (prompt adoption)
+
+#### Validator Implementation (`scripts/validate-artifact.py`, 669 lines)
+
+**Usage:** `uv run --with pyyaml scripts/validate-artifact.py <path>`
+
+**P-1 checks (Evidence Type + Access Status):**
+- Evidence Type enum validation: PRIMARY_DOCUMENT, OFFICIAL_DATA, **SECONDARY_DOCUMENT** (added), SEARCH_RESULT, CALCULATION, USER_SUPPLIED
+- CALCULATION `access_status`: INFO-level notice for "N/A" (not ERROR); schema recommends omitting field entirely
+- Decision: SECONDARY_DOCUMENT added after reviewing 4 gate-set occurrences (Investopedia, Wikipedia, RSI guide) — educational/reference sources are not merely "search results"
+
+**P-2 fixes (`docs/audit-checklist.md`):**
+- "Audit Mode Application" section rewritten to match independent-auditor prompt
+- **Baseline audit (artifact-aware, 10 checks):** 1,2,3,5,6,7,8,9,10,12
+- **Final-report audit (adds checks 4+11):** baseline + 4 (conversation coverage) + 11 (reader quality)
+- **Differential audit (all 12 checks):** every check applicable
+- "fail" terminology replaced with BLOCKER throughout
+
+**P-3 checks (CR Status Cross-Check):**
+- Validates `change_requests_addressed` status against latest verification report's CR resolution record
+- Catches false-resolution self-claims (e.g., producer claims "resolved" while acceptance criterion unmet)
+- Implemented via verification-report parsing: each CR's `resolution.status` must match artifact's self-declared status
+
+**P-4/P-5 documentation:**
+- P-4 (audit output budget): measured 2071–4129 vs targets 500–1000/1500–2000 — E2 input, not C1 blocker
+- P-5 (verbatim recovery): opencode.db path established in session 03 — robustness path documented (not automated yet)
+
+**Validation coverage:**
+- YAML frontmatter structure (required fields, versioning)
+- Claim ID format (Q<n>.C<m>), depends_on references
+- Evidence ID format (E<n>), type enum, required metadata
+- Source reference structure (type, identifier, spans with line/turn)
+- Change Request format and cross-check (P-3)
+- Verification Report format and CR resolution records
+
+**Testing:** Validated against gate-set artifacts (fx01/03/06/07): 5/6 valid (`source.md` has no frontmatter, expected); all real artifacts (Question Map, Research Packet, Verification Report) pass.
+
+#### Schema Promotion (`docs/artifact-schema.md`)
+
+- Evidence Type enum updated (added SECONDARY_DOCUMENT with usage note)
+- Status changed: **DRAFT → VALIDATED**
+- CALCULATION `access_status` rule clarified: "Omit this field for derived/CALCULATION items; schema examples omit it"
+
+#### Prompt Adoption (all 4 agents)
+
+**research-lead.md** (+307 tokens):
+- Workflow section updated: dispatch instructions reference `docs/artifact-schema.md`
+- P-3 warning added: "Producer self-declared CR status is data, not fact — the auditor must cross-check against the verification report"
+- Schema requirements explicit in dispatch: frontmatter structure, claim IDs, evidence IDs, source anchors
+
+**conversation-analyst.md** (+65 tokens):
+- Schema reference added: "See `docs/artifact-schema.md` for frontmatter and source anchor structure"
+- Output contract unchanged (already schema-conformant per session-03 fx01/fx03)
+
+**quant-researcher.md** (+123 tokens):
+- Evidence section updated: Evidence Type enum documented inline (6 types, including SECONDARY_DOCUMENT)
+- CALCULATION `access_status` rule: "Omit `access_status` for derived/CALCULATION items; schema examples omit it; if present, INFO-level notice (not error)"
+- Output contract unchanged (already schema-conformant per session-03 fx06/fx07)
+
+**independent-auditor.md** (+163 tokens):
+- Schema reference added: "Artifacts follow `docs/artifact-schema.md` (VALIDATED)"
+- P-3 requirement explicit: "Change Request status cross-check: producer self-declared `change_requests_addressed` is data, not fact — verify against the latest verification report's CR resolution record; false-resolution = first-class defect"
+- Output contract unchanged (already schema-conformant per session-03 audit trail)
+
+### ✅ Token Measurement (post-C1, tiktoken o200k_base proxy)
+
+| File | Session 03 | Post-C1 | Δ C1 |
+|---|---|---|---|
+| conversation-analyst.md | 1393 | 1458 | +65 |
+| independent-auditor.md | 1334 | 1497 | +163 |
+| quant-researcher.md | 1706 | 1829 | +123 |
+| research-lead.md | 1660 | 1967 | +307 |
+| commands/recap.md | 569 | 569 | 0 |
+| **4-agent total** | **6093** | **6751** | **+658 (+10.8%)** |
+| 5-file total | 6662 | 7320 | +658 (+9.9%) |
+
+**Cumulative from baseline (fb1b50d):**
+- 5-file: 5836 → 6662 (+14.2% EPIC-B) → **7320 (+25.4% total)**
+- 4-agent: 5267 → 6093 (+15.7% EPIC-B) → **6751 (+28.2% total)**
+
+**Static context total (prompts + docs/templates):** 7320 + 3892 (docs) = 11,212 tokens (+ `docs/artifact-schema.md` 3738 when referenced = **14,950; ≈5.8% of 256k budget**). KV-cache residency on RTX 3090 remains the constraint, not context budget.
+
+### Key Decisions
+
+1. **SECONDARY_DOCUMENT enum addition, not merge into SEARCH_RESULT.** Investopedia, Wikipedia, RSI educational guides are distinct from web search snippets — educational/reference sources deserve semantic tagging.
+2. **CALCULATION `access_status`: INFO notice for "N/A", not ERROR.** Schema recommends omitting the field; existing artifacts wrote "N/A" — tolerate legacy artifacts, nudge future ones via INFO-level feedback.
+3. **Keep runs/.work/ gitignored.** Transient per-run audit trails (size/volume concerns); committed evidence lives in `docs/`.
+4. **P-3 cross-check mandatory for validator and auditor.** Producer self-status is untrusted; false-resolution is a defect (inspired by fx07 v3).
+
+### C1 Completion Checklist
+
+- [x] `scripts/validate-artifact.py` implemented (669 lines, P-1/P-3/P-5 checks)
+- [x] P-1 resolved: Evidence Type enum (added SECONDARY_DOCUMENT), CALCULATION access_status rule
+- [x] P-2 resolved: `docs/audit-checklist.md` "Audit Mode Application" synced (10-check baseline, 12-check final/differential)
+- [x] P-3 resolved: validator CR cross-check + auditor prompt warning
+- [x] P-4 documented: output budget E2 input
+- [x] P-5 documented: opencode.db recovery path
+- [x] Prompt adoption: all 4 agents schema-conformant
+- [x] `docs/artifact-schema.md` promoted: DRAFT → VALIDATED
+- [x] Token measurement: +658 tokens (+9.9% on 5-file basis)
+- [x] Validator testing: gate-set artifacts validated
+
+**C1 Definition of Done: COMPLETE.**
