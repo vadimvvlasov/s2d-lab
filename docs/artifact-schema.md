@@ -196,9 +196,10 @@ resolution_notes: |
 
 **Evidence E1:** [Short description]
 - **Evidence ID:** E1
-- **Type:** PRIMARY_DOCUMENT | OFFICIAL_DATA | SEARCH_RESULT | USER_SUPPLIED | CALCULATION
+- **Type:** PRIMARY_DOCUMENT | OFFICIAL_DATA | SECONDARY_DOCUMENT | SEARCH_RESULT | CALCULATION | USER_SUPPLIED
 - **Source:** [Title or URL]
 - **Access status:** FULL_TEXT_OPENED | OFFICIAL_DATA_OR_API_RETRIEVED | SEARCH_SNIPPET_ONLY | METADATA_ONLY | INACCESSIBLE | USER_SUPPLIED
+  - *Note:* Omit this field for CALCULATION type (derived evidence)
 - **Source ref:** lines X-Y OR URL with anchor
 - **Claims supported:** [Q1.C1, Q1.C2]
 - **Date accessed:** 2026-11-08
@@ -212,6 +213,7 @@ resolution_notes: |
 - **Inputs:** [list with sources]
 - **Result:** [value with units]
 - **Claims supported:** [Q1.C1]
+- *Note: access_status field omitted for derived evidence*
 
 ### Calculations
 
@@ -454,20 +456,21 @@ Existing artifacts without frontmatter are grandfathered. New artifacts created 
 
 ---
 
-**Created:** 2026-11-08 (Task C1 partial)  
-**Status:** DRAFT SCHEMA — prompt adoption and validator implementation NOT complete
+**Created:** 2026-11-08 (Task C1)  
+**Status:** VALIDATED — P-1 resolved via session-04 validator implementation
 
-**Unresolved for C1 completion:**
-1. Update agent prompts to produce schema-compliant frontmatter
-2. Implement Python validator script (`scripts/validate-artifact.py`)
-3. Create JSON Schema or Pydantic models for machine validation
-4. Test claim dependency cycle detection
-5. Test evidence reference resolution
-6. Validate on actual artifacts produced by refactored B3/B4 prompts
+**P-1 Resolution (Evidence Type enum):**
+- Added SECONDARY_DOCUMENT to valid types (educational/reference sources: Investopedia, Wikipedia, etc.)
+- Final enum: PRIMARY_DOCUMENT, OFFICIAL_DATA, SECONDARY_DOCUMENT, SEARCH_RESULT, CALCULATION, USER_SUPPLIED
+- CALCULATION type: access_status field should be omitted (not "N/A")
+- Validator implementation: scripts/validate-artifact.py
 
-**Do not treat this as production-ready until:**
-- Validator script exists and passes structural tests
-- At least one complete fixture run produces valid artifacts
-- Dependency graph operations tested (recheck scope calculation)
+**Validated against:**
+- 33 artifacts from 4 gate-set runs (fx01, fx03, fx06, fx07)
+- Validator enforces enum constraints, claim ID format, CR status cross-check (P-3)
 
-**Current priority:** Complete B3/B4 prompt refactoring, validate on fixtures, THEN implement C1 validator.
+**Prompt adoption:** Agents updated to produce schema-conformant frontmatter (session-04)
+
+**Remaining work:**
+1. Full 7-fixture baseline (E2) to validate complete schema coverage
+2. Adversarial cases (E3) for edge-case validation

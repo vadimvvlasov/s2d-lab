@@ -205,19 +205,36 @@ Did the auditor verify claims independently or endorse without checking?
 
 ## Audit Mode Application
 
-### Baseline Audit (v1)
-Apply **checks 1, 5, 6, 8, 9, 10** only.
+### Baseline Audit (v1) — Artifact-Aware
 
-**Rationale:** Focus on foundational high-impact defects. Defer polish to differential audits after initial revision.
+**For Question Map / Research Packet:**
+Apply checks **1, 2, 3, 5, 6, 7, 8, 9, 10, 12** (10 checks):
+1. Question fidelity
+2. Question decomposition
+3. Participant criteria provenance
+5. Recommendation logic
+6. Financial safety
+7. Conceptual correctness
+8. Evidence access
+9. Source fit
+10. Calculations
+12. Audit honesty
+
+**For Final Report:**
+Apply **all 12 checks** (add 4 and 11):
+4. Option coverage
+11. Reader quality
+
+**Rationale:** Catch foundational defects that invalidate conclusions. Option coverage and reader quality are Final Report concerns, not Research Packet v1 concerns.
 
 ### Differential Audit (v2+)
 Apply **all 12 checks** to affected scope:
 - Sections explicitly changed to address CRs
-- Claims that cite/depend on corrected content
+- Claims that cite/depend on corrected content (via depends_on field)
 - Adjacent context for coherence
-- Regression check for new defects
+- Regression check for new defects in edited areas
 
-**Do not re-audit unchanged sections** unless they depend on corrected content.
+**Do not re-audit unchanged sections** unless they logically depend on corrected content.
 
 ## Severity Guidelines
 
