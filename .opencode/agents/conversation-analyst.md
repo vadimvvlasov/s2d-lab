@@ -111,6 +111,8 @@ For conversations exceeding reasonable single-pass size:
 
 ## Structured output with frontmatter
 
+**REQUIRED:** Produce artifact with schema-conformant YAML frontmatter per `docs/artifact-schema.md`.
+
 ### Frontmatter (YAML)
 
 ```yaml

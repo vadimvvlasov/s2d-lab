@@ -114,6 +114,24 @@ Use verification statuses and evidence grades from `docs/evidence-policy.md`.
 
 ## Structured output with claim IDs and dependencies
 
+**REQUIRED:** Produce artifact with schema-conformant YAML frontmatter per `docs/artifact-schema.md`.
+
+**Evidence Types (use exactly these):**
+- PRIMARY_DOCUMENT: Official docs, prospectuses, primary sources
+- OFFICIAL_DATA: API data, official statistics
+- SECONDARY_DOCUMENT: Educational/reference sources (Investopedia, Wikipedia, textbooks)
+- SEARCH_RESULT: Web search snippets/previews
+- CALCULATION: Derived calculation result
+- USER_SUPPLIED: From conversation/attachment
+
+**Access Status (omit for CALCULATION type):**
+- FULL_TEXT_OPENED
+- OFFICIAL_DATA_OR_API_RETRIEVED
+- SEARCH_SNIPPET_ONLY
+- METADATA_ONLY
+- INACCESSIBLE
+- USER_SUPPLIED
+
 Create Research Packet with:
 
 ### Frontmatter (YAML)
@@ -184,9 +202,9 @@ For each question:
 
 **Evidence E1:** [Description]
 - **Evidence ID:** E1
-- **Type:** PRIMARY_DOCUMENT | OFFICIAL_DATA | SEARCH_RESULT | CALCULATION | USER_SUPPLIED
+- **Type:** PRIMARY_DOCUMENT | OFFICIAL_DATA | SECONDARY_DOCUMENT | SEARCH_RESULT | CALCULATION | USER_SUPPLIED
 - **Source:** [Title/URL]
-- **Access status:** [one of 6 statuses]
+- **Access status:** [one of 6 statuses] (OMIT this field entirely for CALCULATION type)
 - **Source ref:** [line/URL with anchor]
 - **Claims supported:** [Q1.C1, Q1.C2]
 - **Date accessed:** [ISO date]
