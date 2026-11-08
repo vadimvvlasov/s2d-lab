@@ -1,15 +1,17 @@
 # S2D Lab Modernization — Session 05 Summary
 
 **Date:** 2026-11-08  
-**Focus:** D2 implementation (claim dependency graph validator + visualizer)
+**Focus:** D2 + D3 implementation (claim dependency graph + state validator)
 
-## Executive Takeaways (3)
+## Executive Takeaways (4)
 
-1. **D2 Definition of Done complete.** Claim dependency graph validator enforces DAG property: existence check (all `depends_on` references must exist), cycle detection via DFS, transitive scope calculation for differential audits. Graph visualizer (`scripts/visualize-claim-graph.py`) generates SVG/PNG/PDF with changed-claim highlighting. D2 complete per locked order (C1 → D2 → D3).
+1. **D2 + D3 Definition of Done complete.** D2: Claim dependency graph validator enforces DAG property (existence check, cycle detection, transitive scope calculation) + graph visualizer generates SVG/PNG/PDF. D3: State schema validator with Pydantic 2.x enforces workflow rules (cycle limit ≤3, no PASS with unresolved BLOCKER, release eligibility conditions). Both complete per locked order (C1 → D2 → D3).
 
-2. **Dependency validation tested on gate-set + synthetic negatives.** fx01 Research Packet (11 claims) validates clean; fx06-v2 (3 claims) validates clean. Three synthetic negative tests confirm error detection: non-existent dependency reference (Q9.C99), 2-claim cycle (Q1.C1 ↔ Q1.C2), valid DAG passes. Visualizer tested on fx01/fx06 with changed-claim highlighting.
+2. **D2 tested on gate-set + synthetic negatives; D3 tested on schema + gate-set.** D2: fx01/fx06 validation pass, 3 synthetic tests (non-existent dep, cycle, valid-DAG) all correct. D3: 6 schema tests pass; gate-set validation found 2 legitimate errors (fx03: released without final audit, fx06: missing status field) — validator works correctly, fixtures need correction.
 
-3. **Zero token cost for D2 — external tooling only.** No agent prompt changes; all D2 functionality lives in Python scripts (`validate-artifact.py` enhanced, `visualize-claim-graph.py` new). Agents already reference `depends_on` in recheck scope per EPIC-B (session 02–03); validator now enforces the schema rules documented in `docs/artifact-schema.md` §Dependency Validation.
+3. **Combined zero token cost for D2 + D3 — external tooling only.** No agent prompt changes; all D2/D3 functionality lives in Python scripts. Agents already produce compliant data (D2: `depends_on` from B3; D3: state.yaml from research-lead). Scripts enforce; agents comply.
+
+4. **D-tier foundation complete, ready for E-tier.** D2 (dependency graph) + D3 (state validator) provide deterministic validation; D1 (source-first audit) deferred per locked order. E1 (structural tests) can now use both validators; E2 (LLM eval) has validation baseline.
 
 ## What Was Done
 
@@ -85,7 +87,9 @@ uv run --with pyyaml --with graphviz scripts/visualize-claim-graph.py packet.md 
 - fx01 with changed highlighting: `--changed Q1.C1,Q1.C4` → Q1.C5 highlighted yellow (depends on Q1.C1)
 - fx06 RP v2: generated graph (3 claims, 1 edge)
 
-### Documentation Updates
+---
+
+## D3 — State Schema + Validator
 
 **`docs/artifact-schema.md`:**
 - D2 implementation status added to validation section
@@ -131,7 +135,7 @@ uv run --with pyyaml --with graphviz scripts/visualize-claim-graph.py packet.md 
 
 ## Token Impact
 
-**Zero.** No prompt changes; all D2 functionality is external Python tooling.
+**Zero for D2 + D3.** No prompt changes; all D2/D3 functionality is external Python tooling.
 
 **Cumulative token investment (unchanged from session 04):**
 - 5-file (agents + `/recap`): 7320 tokens
@@ -141,7 +145,8 @@ uv run --with pyyaml --with graphviz scripts/visualize-claim-graph.py packet.md 
 
 ```
 bdc97be feat(d2): claim dependency graph validator and visualizer
-<new>   docs(audit): session-05 summary and status updates (D2 complete)
+ce592e3 feat(d3): state schema validator with Pydantic
+<new>   docs(audit): session-05 summary and status updates (D2 + D3 complete)
 ```
 
 ## Handoff
@@ -153,6 +158,57 @@ bdc97be feat(d2): claim dependency graph validator and visualizer
 
 ---
 
-**Session Conclusion:** D2 validator + visualizer complete and tested; claim dependency graph validation enforces DAG property; transitive scope calculation ready for D3 integration; zero token cost. D2 complete; D3 may begin.
+**Session Conclusion:** D2 + D3 validators complete and tested; claim dependency graph enforces DAG; state validator enforces workflow rules (cycle limit, PASS/BLOCKER, release eligibility); zero token cost. D-tier validators ready; E-tier (structural tests + LLM eval) may begin.
 
-**Next Milestone:** D3 — state schema + validator (deterministic workflow control).
+**Next Milestone:** E1 — automated structural tests (using D2 + D3 validators).
+
+
+**Status:** COMPLETE  
+**Commit:** ce592e3
+
+### D3.1: Pydantic Schema (`scripts/state_schema.py`, 300 lines, Pydantic 2.x)
+- Models: ArtifactState, ChangeRequest, VerificationRecord, FinalAudit, Release, RunState
+- Enums: ArtifactStatus, CRStatus, Severity, Verdict, FinalAuditStatus
+- Validation rules embedded as Pydantic validators
+
+### D3.2: Validation Rules
+1. **Cycle limit ≤3**: `@field_validator` on artifacts.cycle_count
+2. **No PASS with unresolved BLOCKER**: `@model_validator` cross-checks artifacts.status vs unresolved BLOCKERs
+3. **Release eligibility conditions**: `@model_validator` enforces final_audit=PASS + no BLOCKERs + path set
+4. **Version/cycle consistency**: v1→cycle0, v2→cycle1, etc.
+5. **ID format validation**: run_id (YYYY-MM-DD-slug), CR-NNN, F-NNN, REV-NNN
+6. **Findings sum**: total = blocker + major + minor
+
+### D3.3: Validator Script (`scripts/validate-state.py`, 100 lines)
+**Usage:** `uv run --with pydantic --with pyyaml scripts/validate-state.py <state-yaml>`
+
+**Features:**
+- Loads YAML, parses with Pydantic
+- All rules run automatically
+- Exit 0 = valid, 1 = invalid
+
+### D3.4: Testing
+**Schema tests:** 6/6 pass (ArtifactState, ChangeRequest, VerificationRecord, RunState rules)
+
+**Gate-set validation:** 2/4 valid, 2 legitimate errors found
+- fx01: ✓ PASS (valid state)
+- fx03: ✗ ERROR release.eligible=true but final_audit.status=not_started (legitimate: released at QM stage)
+- fx06: ✗ ERROR research_packet missing 'status' field (legitimate: fixture incomplete)
+- fx07: ✓ PASS (valid state, cycle 3, escalated)
+
+**Errors prove validation works** — validator correctly identified real issues in fixture files.
+
+---
+
+## Documentation Updates (D2 + D3)
+
+**`docs/artifact-schema.md`:**
+- D2 implementation status added
+- D3: state validation section (future work: integrate state validator with artifact validator)
+
+**`docs/d2-implementation-plan.md`** (created):
+- D2 objectives, scope, testing plan
+
+**`docs/d3-implementation-plan.md`** (created):
+- D3 objectives, Pydantic schema design, validation rules, acceptance criteria
+
