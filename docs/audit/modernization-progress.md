@@ -164,14 +164,22 @@ Tasks:
 - Catch omissions and interpretation bias
 
 #### D2. Claim Dependency Graph
-**Status:** NOT STARTED  
+**Status:** ✅ COMPLETE (session 05)  
+**Commits:** bdc97be (validator + visualizer)  
 **Priority:** HIGH (required for proper differential audit)
 
-Tasks:
-- Add claim_id to each verifiable claim
-- Support depends_on relationships
-- Differential audit checks affected claims + dependencies
-- Recheck scope includes dependent claims
+Completed:
+- ✅ D2.1: Validator enhancement (`scripts/validate-artifact.py`, +90 lines)
+  - Existence check: all `depends_on` refs must exist
+  - Cycle detection: DAG enforcement via DFS
+  - Transitive scope calculation: `get_transitive_recheck_scope` method
+- ✅ D2.2: Graph visualizer (`scripts/visualize-claim-graph.py`, 260 lines)
+  - Generates SVG/PNG/PDF from Research Packets
+  - Highlights changed claims (red) + transitive dependents (yellow)
+  - Graphviz-based DOT rendering
+- ✅ Testing: fx01/fx06 validation pass, 3 synthetic negative tests
+- ✅ Documentation: `docs/artifact-schema.md` updated with D2 status
+- ✅ Token impact: zero (external tooling only)
 
 #### D3. State Schema + Validator
 **Status:** NOT STARTED  
@@ -295,7 +303,8 @@ Per handoff document, the following are intentionally out of scope:
 
 Recommended sequence:
 1. ~~**C1** — Unified handoff format (foundation)~~ ✅ **COMPLETE** (session 04)
-2. **D2** — Claim dependency graph (enables proper differential audit) ← **NEXT**
+2. ~~**D2** — Claim dependency graph (enables proper differential audit)~~ ✅ **COMPLETE** (session 05)
+3. **D3** — State schema + validator (deterministic control) ← **NEXT**
 3. **D3** — State schema + validator (deterministic control)
 4. **D1** — Source-first audit (independent verification)
 5. **C2** — Source index (efficient access)
@@ -311,8 +320,8 @@ Recommended sequence:
 
 ---
 
-**Last Updated:** 2026-11-08 after session 04 (C1 complete)  
-**Next Milestone:** D2 — claim dependency graph (validator + visualizer)
+**Last Updated:** 2026-11-08 after session 05 (D2 complete)  
+**Next Milestone:** D3 — state schema + validator (formalize `state.yaml`, validate transitions)
 
 
 #### B3. Quant Researcher: Adaptive Workflow
@@ -534,3 +543,94 @@ Referenced docs/templates (7 files incl. `run-state.yaml`): 3892 → **static co
 - [x] Validator testing: gate-set artifacts validated
 
 **C1 Definition of Done: COMPLETE.**
+
+---
+
+## Session 05 — D2 Implementation
+
+**Date:** 2026-11-08 · **Scope:** D2 claim dependency graph (validator + visualizer)
+
+### ✅ D2 — Claim Dependency Graph
+
+**Status:** COMPLETE  
+**Commit:** bdc97be (validator + visualizer)
+
+#### D2.1: Validator Enhancement (`scripts/validate-artifact.py`, +90 lines)
+
+**Existing (C1):**
+- Claim ID format validation, self-dependency detection, `depends_on` parsing
+
+**Added (D2):**
+- **Existence check:** all `depends_on` refs must exist in same artifact
+  - Error: "Claim {cid}: depends_on references non-existent claim {dep_id}"
+- **Cycle detection:** DAG enforcement via DFS
+  - Error: "Claim dependency cycle detected: Q1.C1 → Q1.C2 → Q1.C1"
+- **Transitive scope calculation:** `get_transitive_recheck_scope(changed_ids, claims)`
+  - Input: changed claim IDs (from CRs) + all claims
+  - Output: changed + all transitive dependents (for differential audits)
+
+**Testing:**
+- fx01 RP v1 (11 claims): ✅ PASS
+- fx06 RP v2 (3 claims): ✅ PASS
+- d2-test-1 (non-existent Q9.C99): ✅ ERROR detected
+- d2-test-3 (cycle Q1.C1 ↔ Q1.C2): ✅ ERROR detected
+- d2-test-5 (valid DAG): ✅ PASS
+
+#### D2.2: Graph Visualizer (`scripts/visualize-claim-graph.py`, 260 lines)
+
+**Usage:**
+```bash
+# Generate SVG
+uv run --with pyyaml --with graphviz scripts/visualize-claim-graph.py <research-packet-path>
+
+# Highlight changed claims
+uv run --with pyyaml --with graphviz scripts/visualize-claim-graph.py packet.md --changed Q1.C1,Q1.C3
+
+# Other formats
+uv run --with pyyaml --with graphviz scripts/visualize-claim-graph.py packet.md --format png
+```
+
+**Features:**
+- Parse Research Packet: extract claims + `depends_on` from markdown
+- Build directed graph (graphviz DOT format)
+- Node styling: changed (red), dependent (yellow), unchanged (white)
+- Edge direction: claim → dependency (A depends_on B → edge A→B)
+- Output: SVG, PNG, PDF, DOT
+- Transitive dependent calculation
+
+**Testing:**
+- fx01 RP v1: 11 claims, 6 edges → generated 5.6KB SVG
+- fx01 with `--changed Q1.C1,Q1.C4`: Q1.C5 highlighted yellow (depends on Q1.C1)
+- fx06 RP v2: 3 claims, 1 edge → clean graph
+
+### ✅ Token Measurement (D2)
+
+**Zero token cost** — no prompt changes; all D2 functionality is external Python tooling.
+
+**Cumulative token investment (unchanged from session 04):**
+- 5-file (agents + `/recap`): 7320 tokens
+- Static context: ~15k tokens (≈5.8% of 256k budget)
+
+### Key Decisions
+
+1. **No agent prompt changes for D2.** Auditor already references `depends_on` (B2-followup); researcher already produces `depends_on` (B3). D2 is pure validation/tooling.
+2. **Validator is enforcement, not LLM.** Dependency rules (existence, cycles, scope) are deterministic graph algorithms — scripts enforce; agents produce compliant data.
+3. **Visualizer highlights transitive dependents.** Changed-claim highlighting calculates all transitive dependents — same calculation differential audits will use (D3 integration).
+4. **Graph direction: claim → dependency.** Edge A→B means "A depends_on B" (matches schema direction; reads left-to-right).
+
+### D2 Completion Checklist
+
+- [x] Validator: existence check
+- [x] Validator: cycle detection (DAG enforcement via DFS)
+- [x] Validator: transitive scope helper
+- [x] Validator: tested on fx01/fx06 + synthetic negatives (5/5 pass)
+- [x] Visualizer: `scripts/visualize-claim-graph.py` (260 lines)
+- [x] Visualizer: SVG/PNG/PDF generation
+- [x] Visualizer: changed-claim highlighting
+- [x] Visualizer: tested on fx01/fx06
+- [x] Documentation: `docs/artifact-schema.md` updated
+- [x] Documentation: `docs/d2-implementation-plan.md` created
+- [x] Testing: 3 synthetic negative tests created
+
+**D2 Definition of Done: COMPLETE.**
+

@@ -1,16 +1,16 @@
 # S2D Lab Modernization Status
 
 **Last Updated:** 2026-11-08  
-**Current Phase:** C1 Complete — D2 Ready  
+**Current Phase:** D2 Complete — D3 Ready  
 **Repository:** /home/vadim/work/projects/invest/s2d-lab
 
 ## Executive Summary
 
-**EPIC B + C1 complete.** EPIC B (prompt refactoring) validated on the confirmed target model (Qwen3.8 27B, provider `x99`, local RTX 3090) via gate-set fixtures (01, 03, 06, 07): **52/52 success criteria met, 0 failures**. C1 (artifact validator + prompt adoption) implemented and tested: `scripts/validate-artifact.py` enforces YAML frontmatter schema with P-1 through P-5 checks; all 4 agent prompts produce schema-conformant artifacts; `docs/artifact-schema.md` promoted DRAFT → VALIDATED.
+**EPIC B + C1 + D2 complete.** EPIC B (prompt refactoring) validated on the confirmed target model (Qwen3.8 27B, provider `x99`, local RTX 3090) via gate-set fixtures (01, 03, 06, 07): **52/52 success criteria met, 0 failures**. C1 (artifact validator + prompt adoption) implemented and tested. D2 (claim dependency graph) validator enforces DAG property: existence check, cycle detection, transitive scope calculation; visualizer generates SVG/PNG/PDF graphs.
 
-**Cumulative token investment (baseline fb1b50d → post-B → post-C1):** 5836 → 6662 (+14.2%) → 7320 (+25.4% total; tiktoken o200k_base proxy). EPIC-B: +15.7% (agents), C1: +9.9% (5-file basis, +10.8% agents-only). Static prompt+doc context ~11.2k tokens (+ 3.7k artifact-schema.md when referenced = ~15k; ≈5.8% of 256k budget) — the context budget is not the constraint; per-turn KV-cache residency on the 24GB card is.
+**Cumulative token investment (baseline fb1b50d → post-B → post-C1):** 5836 → 6662 (+14.2%) → 7320 (+25.4% total; tiktoken o200k_base proxy). D2: **zero token cost** (external tooling only). Static prompt+doc context ~15k tokens (≈5.8% of 256k budget) — the context budget is not the constraint; per-turn KV-cache residency on the 24GB card is.
 
-**Critical Next Step:** D2 — claim dependency graph (validator + visualizer). The `depends_on` field is already in producer output. Then D3 → D1, E1, E2 (full 7-fixture baseline, adding 02/04/05), E3.
+**Critical Next Step:** D3 — state schema + validator (formalize `state.yaml` schema, validate transitions, enforce release eligibility conditions). Then D1, E1, E2 (full 7-fixture baseline, adding 02/04/05), E3.
 
 ## Completed Work
 
@@ -47,6 +47,14 @@
 - ✅ Token measurement: +658 tokens (+9.9% on 5-file basis, +10.8% agents-only)
 - ✅ Validator testing: gate-set artifacts validated (5/6 pass, source.md expected failure)
 - Details: `docs/audit/session-04-summary.md`
+
+### Session 05 (D2 Implementation)
+- ✅ D2.1 validator enhancement: dependency existence check, cycle detection (DAG), transitive scope calculation
+- ✅ D2.2 visualizer: `scripts/visualize-claim-graph.py` (260 lines) — SVG/PNG/PDF with changed-claim highlighting
+- ✅ Testing: fx01/fx06 validation pass, 3 synthetic negative tests (non-existent, cycle, valid-DAG)
+- ✅ `docs/artifact-schema.md` updated with D2 implementation status
+- ✅ Token impact: zero (external tooling only, no prompt changes)
+- Details: `docs/audit/session-05-summary.md`
 
 ## Token Summary (measured, tiktoken o200k_base proxy)
 
@@ -105,11 +113,11 @@ Four agents remain unchanged, become specialized task executors.
 - C3: Token budget manager (NOT STARTED)
 - C4: Sequential scheduling (NOT STARTED)
 
-### ⏳ EPIC D — Verifier and State (NOT STARTED)
-- D1: Source-first audit
-- D2: Claim dependency graph
-- D3: State validator
-- D4: Resume protocol
+### ⏳ EPIC D — Verifier and State (Partial, D2 complete)
+- D1: Source-first audit (NOT STARTED)
+- D2: Claim dependency graph ✅ **COMPLETE** (session 05)
+- D3: State validator (NOT STARTED)
+- D4: Resume protocol (NOT STARTED)
 
 ### ⏳ EPIC E — Tests and Eval (NOT STARTED)
 - E1: Automated structural tests
@@ -141,7 +149,9 @@ B complete → gate set validated on target model (session 03) ✅
    ↓
 C1: validator + prompt adoption (session 04) ✅
    ↓
-D2 (dependency graph) → D3 (state validator) → D1 (source-first)
+D2: claim dependency graph (session 05) ✅
+   ↓
+D3 (state validator) → D1 (source-first)
    ↓
 E1 (structural tests) → E2 (LLM eval: full 7-fixture baseline) → E3 (adversarial)
    ↓
@@ -179,6 +189,19 @@ c9c2903 docs(agents): add Python tooling guidance with uv
 
 ```
 9da7207 docs(audit): session-03 fixture validation results, summary, status updates
+869f84f feat(c1): implement artifact validator with P-1 through P-5 checks
+f2884f8 fix(c1): resolve P-1 evidence enum and P-2 checklist sync
+e2b93dc feat(c1): prompt adoption - agents produce schema-conformant artifacts
+f0575a1 docs(audit): session-04 summary and status updates (C1 complete)
+```
+
+## Git Commits (Session 05)
+
+```
+bdc97be feat(d2): claim dependency graph validator and visualizer
+<new>   docs(audit): session-05 summary and status updates (D2 complete)
+```
+9da7207 docs(audit): session-03 fixture validation results, summary, status updates
 869f84f feat(c1): implement artifact validator with P-1/P-3/P-5 checks
 f2884f8 fix(c1): resolve P-1 evidence enum + P-2 audit checklist sync
 e2b93dc refactor(c1): prompt adoption — schema-conformant artifacts (all 4 agents)
@@ -196,22 +219,22 @@ e2b93dc refactor(c1): prompt adoption — schema-conformant artifacts (all 4 age
 - `docs/audit/fixture-validation-results.md` — Session 03 gate-set results (52/52 criteria, deviation inventory, token records)
 - `docs/audit/session-03-summary.md` — Session 03 report (incl. C1 input list P-1…P-5)
 - `docs/audit/session-04-summary.md` — Session 04 report (C1 validator + prompt adoption complete)
+- `docs/audit/session-05-summary.md` — Session 05 report (D2 claim dependency graph complete)
 - `docs/audit/modernization-progress.md` — Detailed tracker
 - `tests/fixtures/*.md` — 7 golden test fixtures (4 of 7 executed, session 03)
 - Per-run audit trails: `runs/.work/2026-11-08-fx{01,03,06,07}-*/` (gitignored; on-disk evidence)
 
 ## Next Actions
 
-### Immediate (Critical Priority) — D2, C1 complete
-1. **D2 dependency graph** — Claim dependency graph validator + visualizer; the `depends_on` field is already in producer output
-2. **D3 state validator** — No cycle > 3, no silent PASS with BLOCKER, release-eligibility conditions
-3. **D1 source-first audit** — Source-first audit pass (after D2/D3 complete)
+### Immediate (Critical Priority) — D3, D2 complete
+1. **D3 state validator** — Formalize `state.yaml` schema, validate transitions (no cycle > 3, no silent PASS with BLOCKER), enforce release eligibility conditions
+2. **D1 source-first audit** — Source-first audit pass (after D3 complete)
 
 ### After D-tier
-4. **E1** — Automated structural tests (validator negative tests: malformed YAML, invalid IDs, etc.)
-5. **E2** — Full 7-fixture baseline on the target model (adds 02/04/05 to the session-03 gate set), with measured-token and (if possible) VRAM/KV recording
-6. **E3** — Adversarial cases
-7. **F** — Documentation and rollout
+3. **E1** — Automated structural tests (validator negative tests: malformed YAML, invalid IDs, etc.)
+4. **E2** — Full 7-fixture baseline on the target model (adds 02/04/05 to the session-03 gate set), with measured-token and (if possible) VRAM/KV recording
+5. **E3** — Adversarial cases
+6. **F** — Documentation and rollout
 
 ### Blockers
 - **None.** Session-02's three blockers are resolved: target model confirmed (Qwen3.8 27B, provider `x99`, local RTX 3090), runtime environment works (all 4 gate runs executed end-to-end), tokenizer measurement available (tiktoken o200k_base proxy via `scripts/token-count.py`).
@@ -222,4 +245,4 @@ e2b93dc refactor(c1): prompt adoption — schema-conformant artifacts (all 4 age
 
 **Implementation Order:** A → B → C → D → E (validated in this order)
 
-**Current Status:** EPIC B validated on the target model; gate set (4 of 7 fixtures) passed with zero fixture failures; **C1 complete** (validator + prompt adoption); D2 is the next milestone.
+**Current Status:** EPIC B validated on the target model; gate set (4 of 7 fixtures) passed with zero fixture failures; **C1 complete** (validator + prompt adoption); **D2 complete** (dependency graph); D3 is the next milestone.
