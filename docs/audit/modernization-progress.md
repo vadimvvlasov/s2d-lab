@@ -26,7 +26,7 @@
 **Deliverable:** `docs/audit/baseline.md`
 
 #### A2. Golden Fixtures
-**Status:** COMPLETE  
+**Status:** COMPLETE (fixtures authored, zero executions)  
 **Commit:** a649ebb
 
 Created 7 synthetic test fixtures with expected behaviors:
@@ -45,14 +45,14 @@ Each fixture:
 - Expected CR routing and verdicts
 - Observable success criteria (checkboxes)
 
-**Status:** Fixtures documented, NOT YET EXECUTED (manual testing required)
+**Execution Status:** Zero executions. Fixtures are specification documents, not validated test results.
 
 **Deliverable:** `tests/fixtures/*.md`, `tests/fixtures/README.md`
 
 ### ✅ EPIC B — Prompt Refactor
 
 #### B1. Remove Duplicates in Research Lead
-**Status:** COMPLETE  
+**Status:** COMPLETE (structural change committed, behavioral equivalence unvalidated)  
 **Commit:** 63926a1
 
 Removed 3 duplicate sections:
@@ -70,7 +70,7 @@ Removed 3 duplicate sections:
 - No behavioral changes ✓
 
 #### B2. Reduce Auditor Prompt Verbosity
-**Status:** COMPLETE  
+**Status:** COMPLETE (prompt shortened, actual audit output size and checklist availability unvalidated)  
 **Commit:** 1a1fd68
 
 Created `docs/audit-checklist.md` with complete 12-point audit checklist.
@@ -109,7 +109,8 @@ Streamlined `independent-auditor.md` to reference checklist for differential aud
 ### EPIC C — Context Architecture
 
 #### C1. Unified Handoff Format
-**Status:** NOT STARTED  
+**Status:** PARTIAL (schema draft created, prompt adoption and validation not implemented)  
+**Commit:** 558c19e  
 **Priority:** HIGH (foundation for context control)
 
 Tasks:
