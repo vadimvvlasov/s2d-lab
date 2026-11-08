@@ -471,6 +471,12 @@ Existing artifacts without frontmatter are grandfathered. New artifacts created 
 
 **Prompt adoption:** Agents updated to produce schema-conformant frontmatter (session-04)
 
+**D2 Implementation (session-05):**
+- Claim dependency validation: existence check, cycle detection (DAG), transitive scope calculation
+- Validator enhanced: `scripts/validate-artifact.py` now enforces dependency rules from schema §Dependency Validation
+- Visualizer: `scripts/visualize-claim-graph.py` generates SVG/PNG/PDF graphs with changed-claim highlighting
+- Tested on gate-set artifacts + synthetic negative tests (non-existent deps, cycles)
+
 **Remaining work:**
 1. Full 7-fixture baseline (E2) to validate complete schema coverage
 2. Adversarial cases (E3) for edge-case validation

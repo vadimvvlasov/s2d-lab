@@ -356,6 +356,9 @@ class ArtifactValidator:
         claims = self._extract_claims(body)
         evidence_items = self._extract_evidence(body)
 
+        # Build claim ID set for existence checks (D2.1.1)
+        all_claim_ids = {claim.get("id", "") for claim in claims}
+
         # Validate claim IDs (format Q{N}.C{M})
         claim_id_pattern = r"^Q\d+\.C\d+$"
         for claim in claims:
@@ -368,10 +371,27 @@ class ArtifactValidator:
             # Check depends_on references
             if "depends_on" in claim:
                 deps = claim["depends_on"]
+
+                # D2: Self-dependency check (existing)
                 if cid in deps:
                     result.add_error(
                         "content", f"Claim {cid}: self-dependency detected"
                     )
+
+                # D2.1.1: Existence check
+                for dep_id in deps:
+                    if dep_id not in all_claim_ids:
+                        result.add_error(
+                            "content",
+                            f"Claim {cid}: depends_on references non-existent claim {dep_id}",
+                        )
+
+        # D2.1.2: Cycle detection (DAG enforcement)
+        cycle_path = self._detect_cycle(claims)
+        if cycle_path:
+            result.add_error(
+                "content", f"Claim dependency cycle detected: {' → '.join(cycle_path)}"
+            )
 
         # P-1: Validate evidence fields
         for ev in evidence_items:
@@ -421,6 +441,93 @@ class ArtifactValidator:
                         f"Evidence {eid}: invalid access_status '{access_status}'. "
                         f"Must be one of: {', '.join(sorted(self.ACCESS_STATUSES))}",
                     )
+
+    def _detect_cycle(self, claims: list[dict]) -> list[str] | None:
+        """
+        Detect cycles in claim dependency graph using DFS.
+        Returns cycle path if found, None otherwise.
+
+        D2.1.2 implementation.
+        """
+        # Build adjacency list
+        graph = {}
+        for claim in claims:
+            cid = claim.get("id", "")
+            deps = claim.get("depends_on", [])
+            graph[cid] = deps
+
+        visited = set()
+        rec_stack = set()
+
+        def dfs(node: str, path: list[str]) -> list[str] | None:
+            if node in rec_stack:
+                # Cycle detected: return cycle path
+                cycle_start = path.index(node)
+                return path[cycle_start:] + [node]
+
+            if node in visited:
+                return None
+
+            visited.add(node)
+            rec_stack.add(node)
+            path.append(node)
+
+            for dep in graph.get(node, []):
+                if (
+                    dep in graph
+                ):  # Only check if dep exists (existence already validated)
+                    cycle = dfs(dep, path[:])
+                    if cycle:
+                        return cycle
+
+            rec_stack.remove(node)
+            return None
+
+        # Check all nodes (handle disconnected components)
+        for claim_id in graph:
+            if claim_id not in visited:
+                cycle = dfs(claim_id, [])
+                if cycle:
+                    return cycle
+
+        return None
+
+    def get_transitive_recheck_scope(
+        self, changed_claim_ids: set[str], claims: list[dict]
+    ) -> set[str]:
+        """
+        Calculate transitive recheck scope: changed claims + all claims that depend on them.
+
+        D2.1.3 implementation (helper for differential audits).
+
+        Args:
+            changed_claim_ids: Set of claim IDs that were modified
+            claims: List of claim dicts with 'id' and 'depends_on' fields
+
+        Returns:
+            Set of claim IDs to recheck (changed + dependents, transitive)
+        """
+        # Build reverse adjacency: claim_id -> [claims that depend on it]
+        dependents = {}
+        for claim in claims:
+            cid = claim.get("id", "")
+            for dep_id in claim.get("depends_on", []):
+                if dep_id not in dependents:
+                    dependents[dep_id] = []
+                dependents[dep_id].append(cid)
+
+        # BFS to find all transitive dependents
+        scope = set(changed_claim_ids)
+        queue = list(changed_claim_ids)
+
+        while queue:
+            current = queue.pop(0)
+            for dependent_id in dependents.get(current, []):
+                if dependent_id not in scope:
+                    scope.add(dependent_id)
+                    queue.append(dependent_id)
+
+        return scope
 
     def _extract_claims(self, body: str) -> list[dict]:
         """Extract claim metadata from body"""
