@@ -26,8 +26,11 @@ uv run scripts/run-stage-tests.py --dry-run -k ana          # show prompts, no m
 uv run scripts/run-stage-tests.py --check-only runs/.work/t1-results/<stamp>
 ```
 
-Model: `x99/qwen3.8-27b` by default; override with `--model provider/model` or
-`S2D_T1_MODEL`. Results (agent output, `opencode.log`, `summary.md`, `summary.json`
+Model: by default each agent's own `model` and `variant` from its frontmatter (the variant
+sets `reasoning_effort`); override with `--model provider/model[#variant]` or `S2D_T1_MODEL`.
+An explicit `--model` replaces the agent's variant too. Agent `options` are **not** sent to
+the server by opencode (checked with a logging proxy, 2026-11-10), so `--set` only works for
+options opencode itself understands. Results (agent output, `opencode.log`, `summary.md`, `summary.json`
 with time, steps and tokens per case) go to `runs/.work/t1-results/<stamp>/`.
 
 **Run cases one at a time on the local model.** On x99 (RTX 3090, `max_model_len`

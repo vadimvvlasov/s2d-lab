@@ -1,4 +1,6 @@
 ---
+model: x99/qwen3.8-27b
+variant: medium
 description: Leads the S2D question-to-recommendation workflow and writes one engaging, evidence-grounded recap for the conversation participants
 mode: primary
 steps: 80

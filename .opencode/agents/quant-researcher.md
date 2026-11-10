@@ -1,4 +1,6 @@
 ---
+model: x99/qwen3.8-27b
+variant: medium
 description: Answers participant questions with evidence-backed claims, compares options when decision exists, and provides traceable recommendations
 mode: subagent
 steps: 24

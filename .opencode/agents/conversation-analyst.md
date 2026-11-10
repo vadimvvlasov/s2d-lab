@@ -1,4 +1,6 @@
 ---
+model: x99/qwen3.8-27b
+variant: low
 description: Extracts questions, concerns, disagreements and decision context from conversation with stable source anchors
 mode: subagent
 steps: 20

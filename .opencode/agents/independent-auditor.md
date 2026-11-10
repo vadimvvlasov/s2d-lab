@@ -1,4 +1,6 @@
 ---
+model: x99/qwen3.8-27b
+variant: low
 description: Independently checks question fidelity, option comparisons, recommendation logic, source access, and factual/quantitative claims
 mode: subagent
 steps: 15

@@ -48,7 +48,9 @@ ROOT = Path(__file__).resolve().parent.parent
 CASES_DIR = ROOT / "tests" / "stage" / "cases"
 RESULTS_DIR = ROOT / "runs" / ".work" / "t1-results"
 SANDBOX_COPY = [".opencode", "opencode.json", "AGENTS.md", "docs", "templates", "scripts"]
-DEFAULT_MODEL = os.environ.get("S2D_T1_MODEL", "x99/qwen3.8-27b")
+# "agent" = no --model flag: each agent's frontmatter model and variant
+# (reasoning effort) apply. An explicit provider/model[#variant] overrides both.
+DEFAULT_MODEL = os.environ.get("S2D_T1_MODEL", "agent")
 # MCP servers seen in user/global configs. Their tools bypass edit permissions, the
 # sandbox and the web ban (filesystem rooted at $HOME, a browser), so tests deny them.
 MCP_SERVERS = ["filesystem", "playwright", "context7"]
@@ -390,7 +392,7 @@ def run_case(case: dict, base: Path, results: Path, model: str, timeout: int, op
     log = sandbox / "opencode.log"
     cmd = [
         "opencode", "run", "--standalone", "--auto",
-        "--agent", case["agent"], "--model", model,
+        "--agent", case["agent"], *(["--model", model] if model != "agent" else []),
         "--format", "json", "--title", f"t1 {case['id']}",
         render_prompt(case),
     ]
@@ -477,7 +479,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("-k", dest="keyword", help="run only cases whose id contains this text (comma-separated: any of)")
     ap.add_argument("--agent", help="run only cases for this agent")
-    ap.add_argument("--model", default=DEFAULT_MODEL, help=f"provider/model (default {DEFAULT_MODEL}; env S2D_T1_MODEL)")
+    ap.add_argument("--model", default=DEFAULT_MODEL, help=f"provider/model[#variant], or 'agent' for the agent's own model and variant (default {DEFAULT_MODEL}; env S2D_T1_MODEL)")
     ap.add_argument("--jobs", type=int, default=1,
                     help="cases to run in parallel (default 1; on a single 24 GB GPU more jobs overflow "
                          "the KV cache and every case gets slower)")
