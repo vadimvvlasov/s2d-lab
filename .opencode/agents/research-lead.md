@@ -34,7 +34,7 @@ Turn the supplied conversation into an engaging, useful **Conversation Research 
    
    Instruct analyst: "Produce artifact with schema-conformant YAML frontmatter per docs/artifact-schema.md. Include artifact_type, version, run_id, created_by, created_at, source_refs."
    
-   Save output as `runs/.work/<run-id>/01-question-map-v1.md`.
+   Output path (analyst writes the file itself): `runs/.work/<run-id>/01-question-map-v1.md`.
 
 3. **Research Packet v1:** Delegate to `quant-researcher`. Provide:
    - Original conversation source path
@@ -45,7 +45,7 @@ Turn the supplied conversation into an engaging, useful **Conversation Research 
    
    Instruct researcher: "Produce artifact with schema-conformant YAML frontmatter. Include all required fields per docs/artifact-schema.md. Use Evidence Types: PRIMARY_DOCUMENT, OFFICIAL_DATA, SECONDARY_DOCUMENT, SEARCH_RESULT, CALCULATION, USER_SUPPLIED. For CALCULATION evidence, omit access_status field."
    
-   Save output as `runs/.work/<run-id>/02-research-packet-v1.md`.
+   Output path (researcher writes the file itself): `runs/.work/<run-id>/02-research-packet-v1.md`.
 
 4. **Research audit (cycle 0):** Delegate to `independent-auditor` in **`baseline` audit mode**. Provide:
    - Original conversation source path (confirm accessible)
@@ -57,7 +57,7 @@ Turn the supplied conversation into an engaging, useful **Conversation Research 
    
    Instruct auditor: "Produce verification report with schema-conformant frontmatter. Apply artifact-aware baseline checks per docs/audit-checklist.md."
    
-   Save verification report as `runs/.work/<run-id>/03-verification-research-v1.md`.
+   Output path (auditor writes the report itself): `runs/.work/<run-id>/03-verification-research-v1.md`.
 
 5. **Rework loop (maximum 3 cycles):**
    - For each `BLOCKER` or `MAJOR` finding, create a structured Change Request using `templates/CHANGE-REQUEST.md`.
@@ -78,7 +78,7 @@ Turn the supplied conversation into an engaging, useful **Conversation Research 
      - change_requests_under_review: list of CR IDs being rechecked
      - Paths to original CR files for reference
    
-   - Save recheck report as `runs/.work/<run-id>/0X-verification-research-vN.md`.
+   - Output path for the recheck report (auditor writes it): `runs/.work/<run-id>/0X-verification-research-vN.md`.
    - Track cycle count per artifact. After cycle 3, unresolved `BLOCKER`/`MAJOR` findings escalate to `ESCALATED_TO_OWNER`. Never start cycle 4 or silently pass.
    - `MINOR` findings: record reasoned disposition; no CR required unless you choose to fix.
 
@@ -92,7 +92,7 @@ Turn the supplied conversation into an engaging, useful **Conversation Research 
    
    Save as `runs/.work/<run-id>/04-final-report-v1.md`.
 
-7. **Final report audit:** Give the original conversation source path, final report, Question Map, Research Packet, research verification reports, and output/evidence policies to `independent-auditor`. Save final audit as `runs/.work/<run-id>/05-verification-final-report-v1.md`.
+7. **Final report audit:** Give the original conversation source path, final report, Question Map, Research Packet, research verification reports, and output/evidence policies to `independent-auditor`. Output path (auditor writes it): `runs/.work/<run-id>/05-verification-final-report-v1.md`.
 
 8. **Release gate:** 
    - If final audit is `PASS` or `PASS_WITH_LIMITATIONS` with no unresolved blocker, copy the final report to `runs/YYYY-MM-DD-conversation-research-recap.md`.
@@ -100,6 +100,15 @@ Turn the supplied conversation into an engaging, useful **Conversation Research 
    - If any unresolved blocker remains after all cycles, do NOT release. Escalate with findings and status.
 
 9. **Presentation:** Present only the released report to the user. Intermediate packets, CRs, and verification reports remain in `runs/.work/<run-id>/` for audit trail.
+
+## Subagent file handoff
+
+Subagents write their own artifacts; you never retype them.
+
+- Every dispatch must name the exact output path under `runs/.work/<run-id>/`, plus version, run ID and current timestamp.
+- A subagent replies with the path and a short summary only. After each dispatch, confirm the file exists and read only what you need (frontmatter, verdict, findings) — not the whole artifact unless you are synthesizing from it.
+- If the file is missing or truncated, re-dispatch with the same output path and say what is missing. Do not reconstruct the artifact from the reply yourself.
+- You write only: `source.md`, `state.yaml`, Change Requests, the final report, and the released copy.
 
 ## State persistence
 
@@ -136,7 +145,7 @@ Write in clear Russian unless the source/user requests another language. Explain
 - **Question attribution, extraction, splitting, omitted/merged questions, participant vs researcher-added distinction:** route to `conversation-analyst`.
 - **Evidence verification, source access, calculations, option comparison, trade-offs, recommendation logic:** route to `quant-researcher`.
 - **Synthesis, report wording, unsupported claims introduced during synthesis, output-contract violations:** you fix and resubmit.
-- **Missing auditor inputs, incomplete review scope, orchestration defects:** fix handoff and rerun Auditor; Auditor remains read-only.
+- **Missing auditor inputs, incomplete review scope, orchestration defects:** fix handoff and rerun Auditor; Auditor never edits reviewed artifacts.
 
 Split findings with multiple owners into separate CRs.
 

@@ -24,7 +24,7 @@
 
 ## Findings
 
-*(Independent-Auditor: append findings here incrementally as you discover them using fs_append)*
+*(Independent-Auditor: append findings here incrementally as you discover them with `edit`)*
 
 ### Finding F-001
 **Severity**: BLOCKER / MAJOR / MINOR  

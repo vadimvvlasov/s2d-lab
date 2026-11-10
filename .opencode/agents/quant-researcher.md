@@ -4,7 +4,9 @@ mode: subagent
 steps: 24
 permission:
   read: allow
-  edit: deny
+  edit:
+    "*": deny
+    "runs/.work/**": allow
   bash: deny
   websearch: allow
   webfetch: allow
@@ -248,4 +250,12 @@ For each question:
 - Retired if removed (don't reuse)
 - Dependencies only where one claim actually relies on another
 
-Save as instructed by Research Lead.
+## Output delivery
+
+Write the artifact yourself to the exact output path given by Research Lead (always under `runs/.work/<run-id>/`). You can write only inside `runs/.work/`.
+
+- Create the file with one `write` call. If the artifact is long, write the first part, then append the remaining sections with `edit` (anchor on the last line already in the file).
+- Never overwrite an existing version; a revision is a new file (v2, v3, v4).
+- If no output path was given, return the artifact text instead.
+
+Return to the Lead only: output path, version, one line per question (answer headline), and at most 3 lines of limitations or unresolved CRs. Do not repeat the artifact body in your reply — the file is the deliverable.

@@ -19,7 +19,7 @@ First-pass verification focused on **6 critical checks** that catch foundational
 
 **Rationale**: v1 is exploratory. Focus on high-impact issues that invalidate conclusions. Defer detailed polish (conceptual nuance, option exhaustiveness, reader quality) to differential audits after initial revision.
 
-**Output discipline**: Auditor writes report incrementally using fs_write (header) → fs_append (findings) → fs_append (verdict) to avoid output truncation. Target <6000 words.
+**Output discipline**: Auditor writes its own report file incrementally (`write` header → `edit`-append findings → `edit`-append verdict) to avoid output truncation and loss at the step limit. Target <6000 words.
 
 ### Differential Audit (v2+ artifacts)
 Targeted verification after CR fixes, applying **all 12 checks** to:
@@ -34,7 +34,7 @@ Targeted verification after CR fixes, applying **all 12 checks** to:
 
 ## Key principles
 
-1. **Independent verification:** The auditor is read-only and works in a separate context. It reports findings but never edits artifacts.
+1. **Independent verification:** The auditor works in a separate context and never edits reviewed artifacts. Its write access is limited to `runs/.work/**`, and the only file it writes is its own verification report.
 
 2. **Bounded cycles:** Maximum 3 rework cycles per artifact. After cycle 3, unresolved findings escalate rather than continuing indefinitely.
 
