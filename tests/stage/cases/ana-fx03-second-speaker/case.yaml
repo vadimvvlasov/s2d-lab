@@ -7,8 +7,7 @@ prompt: |
   Version: v1. Run ID: {run_id}. Current timestamp: {now}.
   Output path: {output}
 
-  Produce Question Map v1 with schema-conformant YAML frontmatter per docs/artifact-schema.md
-  and write it to the output path yourself.
+  Produce Question Map v1 and write it to the output path yourself.
 expect:
   questions:
     min: 2

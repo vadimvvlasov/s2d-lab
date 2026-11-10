@@ -40,7 +40,7 @@ Turn the supplied conversation into an engaging, useful **Conversation Research 
    - Run ID
    - Current timestamp
    
-   Instruct analyst: "Produce artifact with schema-conformant YAML frontmatter per docs/artifact-schema.md. Include artifact_type, version, run_id, created_by, created_at, source_refs."
+   The artifact format is defined in the analyst's own prompt; do not point it to `docs/` or `scripts/`.
    
    Output path (analyst writes the file itself): `runs/.work/<run-id>/01-question-map-v1.md`.
 
@@ -51,7 +51,7 @@ Turn the supplied conversation into an engaging, useful **Conversation Research 
    - Run ID
    - Current timestamp
    
-   Instruct researcher: "Produce artifact with schema-conformant YAML frontmatter. Include all required fields per docs/artifact-schema.md. Use Evidence Types: PRIMARY_DOCUMENT, OFFICIAL_DATA, SECONDARY_DOCUMENT, SEARCH_RESULT, CALCULATION, USER_SUPPLIED. For CALCULATION evidence, omit access_status field."
+   The packet format (frontmatter, evidence types, calculations) is defined in the researcher's own prompt; do not point it to `docs/` or `scripts/`.
    
    Output path (researcher writes the file itself): `runs/.work/<run-id>/02-research-packet-v1.md`.
 

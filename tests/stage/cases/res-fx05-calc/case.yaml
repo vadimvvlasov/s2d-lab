@@ -11,8 +11,7 @@ prompt: |
   Web access is disabled for this run; the question needs only the participant's stated inputs
   and arithmetic.
 
-  Produce Research Packet v1 with schema-conformant YAML frontmatter per docs/artifact-schema.md
-  and write it to the output path yourself.
+  Produce Research Packet v1 and write it to the output path yourself.
 expect:
   must_match:
     - "146[,.  ]?932[.,]81"
