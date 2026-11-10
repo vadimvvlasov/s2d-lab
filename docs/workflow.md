@@ -34,13 +34,13 @@ One input: conversation history. One command: `/recap`. One user-facing Markdown
    - Explain why it fits best
    - State downside and when another option would be better
    - Allow "no defensible winner yet"
-   - Save with version: `runs/.work/<run-id>/02-research-packet-v1.md`
+   - One packet per research task from the Question Map: `runs/.work/<run-id>/02-research-T<n>-v1.md`
 
 5. **Research audit (cycle 0)**
    - Independent Auditor reads the original source itself (receives path)
    - Audits question attribution, answer relevance, evidence, comparison fairness, recommendation logic
    - Produces Verification Report with verdict: `PASS` | `PASS_WITH_LIMITATIONS` | `CHANGES_REQUESTED` | `BLOCKED`
-   - Save: `runs/.work/<run-id>/03-verification-research-v1.md`
+   - One audit per task packet: `runs/.work/<run-id>/03-verification-research-T<n>-v1.md`; the Question Map gets its own audit first (`03-verification-question-map-v1.md`)
 
 6. **Rework loop (maximum 3 cycles per artifact)**
    - For each `BLOCKER`/`MAJOR` finding: Research Lead creates Change Request (CR)

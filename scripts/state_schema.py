@@ -21,6 +21,9 @@ class ArtifactStatus(str, Enum):
     CHANGES_REQUESTED = "changes_requested"
     ESCALATED = "escalated"
     NOT_STARTED = "not_started"
+    # A research task whose BLOCKER/MAJOR findings survived 3 cycles: its
+    # questions are left out of the report's answers and listed as open.
+    EXCLUDED = "excluded"
 
 
 class CRStatus(str, Enum):
@@ -220,32 +223,30 @@ class RunState(BaseModel):
                     )
         return artifacts
 
-    @model_validator(mode="after")
-    def validate_pass_with_blocker(self):
-        """D3 Rule 2: No artifact can be 'pass' with unresolved BLOCKERs"""
-        artifacts = self.artifacts
-        change_requests = self.change_requests
-
-        # Find unresolved BLOCKERs
-        unresolved_blockers = [
+    def unresolved_blockers(self, include_excluded: bool = True) -> List[ChangeRequest]:
+        """Open BLOCKER CRs; optionally skip those on excluded research tasks."""
+        excluded = {
+            name for name, a in self.artifacts.items() if a.status == ArtifactStatus.EXCLUDED
+        }
+        return [
             cr
-            for cr in change_requests
+            for cr in self.change_requests
             if cr.severity == Severity.BLOCKER
             and cr.status
             not in [CRStatus.VERIFIED_RESOLVED, CRStatus.ACCEPTED_WITH_LIMITATION]
+            and (include_excluded or cr.artifact not in excluded)
         ]
 
-        if not unresolved_blockers:
-            return self
-
-        # Check if any artifact is marked "pass" with unresolved BLOCKERs
-        for name, artifact in artifacts.items():
-            if artifact.status == ArtifactStatus.PASS:
+    @model_validator(mode="after")
+    def validate_pass_with_blocker(self):
+        """D3 Rule 2: No artifact can be 'pass' with its own unresolved BLOCKERs"""
+        blockers = self.unresolved_blockers()
+        for name, artifact in self.artifacts.items():
+            own = [cr.cr_id for cr in blockers if cr.artifact == name]
+            if artifact.status == ArtifactStatus.PASS and own:
                 raise ValueError(
-                    f"Artifact '{name}' status='pass' but unresolved BLOCKER CRs exist: "
-                    f"{[cr.cr_id for cr in unresolved_blockers]}"
+                    f"Artifact '{name}' status='pass' but unresolved BLOCKER CRs exist: {own}"
                 )
-
         return self
 
     @model_validator(mode="after")
@@ -253,7 +254,6 @@ class RunState(BaseModel):
         """D3 Rule 3: Release eligibility conditions"""
         release = self.release
         final_audit = self.final_audit
-        change_requests = self.change_requests
 
         if not release or not release.eligible:
             return self  # Not claiming eligibility, OK
@@ -268,14 +268,9 @@ class RunState(BaseModel):
                 f"(must be 'pass' or 'pass_with_limitations')"
             )
 
-        # Condition 2: No unresolved BLOCKERs
-        unresolved_blockers = [
-            cr
-            for cr in change_requests
-            if cr.severity == Severity.BLOCKER
-            and cr.status
-            not in [CRStatus.VERIFIED_RESOLVED, CRStatus.ACCEPTED_WITH_LIMITATION]
-        ]
+        # Condition 2: No unresolved BLOCKERs, except on excluded research tasks
+        # (their questions are not answered in the report)
+        unresolved_blockers = self.unresolved_blockers(include_excluded=False)
         if unresolved_blockers:
             raise ValueError(
                 f"Release eligible=true but unresolved BLOCKER CRs exist: "

@@ -23,6 +23,7 @@ Your deliverable is a compact, decision-support packet: evidence-backed answers,
 Receive:
 - Original conversation source path
 - Question Map with version
+- **Research task**: task ID and its question IDs (e.g. `T2: Q3, Q5`). Research only those questions; the rest of the Question Map is context. Other tasks are researched by other agents.
 - Version identifier for this packet (v1, v2, v3, v4)
 - If revision (v2+): Change Request(s) specifying defects to fix
 
@@ -124,6 +125,8 @@ version: "v1"
 run_id: "<run-id>"
 created_by: "quant-researcher"
 created_at: "<ISO-8601 timestamp from the dispatch>"
+research_task: "T2"
+questions: ["Q3", "Q5"]
 source_refs:
   - path: "runs/.work/<run-id>/source.md"
     type: "conversation"
@@ -200,6 +203,7 @@ Rules:
 - Evidence entries are the source list; do not add a separate "Sources" section.
 - Claims: only those the answer or a recommendation actually depends on — usually 2–5 per question. "Claims supported" must list exactly the claims that cite that evidence.
 - Claim IDs: `Q{n}.C{m}`, stable across revisions, never reused; `Depends on` only where one claim relies on another.
+- Evidence IDs (E1, E2, ...) are local to this packet; other packets reuse the same numbers.
 
 ### Size budget
 

@@ -157,6 +157,11 @@ resolution_notes: |
 
 # Research Packet v1
 
+<!-- Per research task: one packet per task from the Question Map, file
+02-research-T<n>-vN.md, with frontmatter `research_task: "T<n>"` and
+`questions: ["Q1", ...]`. Claims must belong to those questions (validator
+error otherwise). Evidence IDs are local to the packet. -->
+
 ## Q1 — [Question text]
 
 ### Answer

@@ -211,3 +211,72 @@ class TestStateTransitions:
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
+
+
+class TestPerTaskArtifacts:
+    """Research is split into tasks; each task is its own artifact (research_T<n>)."""
+
+    @staticmethod
+    def _state(artifacts, crs, release_eligible=False, final="not_started"):
+        from state_schema import RunState, FinalAudit, FinalAuditStatus, Release
+
+        return RunState(
+            run_id="2026-11-10-test",
+            timestamp="2026-11-10T10:00:00Z",
+            source_ref="source.md",
+            artifacts=artifacts,
+            change_requests=crs,
+            final_audit=FinalAudit(status=FinalAuditStatus(final), unresolved_blockers=0),
+            release=Release(eligible=release_eligible, path="runs/x.md" if release_eligible else None),
+            current_phase="synthesis",
+            next_action="x",
+        )
+
+    @staticmethod
+    def _blocker(artifact):
+        from state_schema import ChangeRequest, CRStatus, Severity
+
+        return ChangeRequest(
+            cr_id="CR-001", finding_id="F-001", artifact=artifact, reviewed_version="v1",
+            target_version="v2", severity=Severity.BLOCKER, assigned_to="quant-researcher",
+            cycle=1, status=CRStatus.ESCALATED_TO_OWNER,
+        )
+
+    def test_blocker_on_one_task_does_not_block_another_pass(self):
+        from state_schema import ArtifactState, ArtifactStatus
+
+        self._state(
+            {
+                "research_T1": ArtifactState(current_version="v1", cycle_count=0, status=ArtifactStatus.PASS),
+                "research_T2": ArtifactState(current_version="v4", cycle_count=3, status=ArtifactStatus.ESCALATED),
+            },
+            [self._blocker("research_T2")],
+        )
+
+    def test_release_allowed_when_blocked_task_excluded(self):
+        from state_schema import ArtifactState, ArtifactStatus
+
+        self._state(
+            {
+                "research_T1": ArtifactState(current_version="v1", cycle_count=0, status=ArtifactStatus.PASS),
+                "research_T2": ArtifactState(current_version="v4", cycle_count=3, status=ArtifactStatus.EXCLUDED),
+            },
+            [self._blocker("research_T2")],
+            release_eligible=True,
+            final="pass",
+        )
+
+    def test_release_rejected_when_blocked_task_not_excluded(self):
+        from pydantic import ValidationError
+        from state_schema import ArtifactState, ArtifactStatus
+
+        with pytest.raises(ValidationError, match="BLOCKER"):
+            self._state(
+                {
+                    "research_T1": ArtifactState(current_version="v1", cycle_count=0, status=ArtifactStatus.PASS),
+                    "research_T2": ArtifactState(current_version="v4", cycle_count=3, status=ArtifactStatus.ESCALATED),
+                },
+                [self._blocker("research_T2")],
+                release_eligible=True,
+                final="pass",
+            )

@@ -25,7 +25,7 @@ Read only:
 
 Do not read `scripts/` (the Lead runs the validator) and do not explore the repository with list/glob/grep beyond the given paths. The report frontmatter is defined below; open `docs/artifact-schema.md` only if a field is unclear.
 
-Read the artifacts under review in full. Read `source.md` at most once in full (for question fidelity and omissions); for later checks rely on what you read and the anchors. Never re-read a file or region you have already read; your context is limited and a re-read can overflow it.
+Read the artifacts under review in full. Read `source.md` as the audit scope below says, and never more than once in full. Never re-read a file or region you have already read; your context is limited and a re-read can overflow it.
 
 Spend effort on verification — recompute numbers, compare claims with sources — not on rereading files you have already read.
 
@@ -69,6 +69,10 @@ For **Question Map / Research Packet:**
 For **Final Report** add:
 4. Option coverage (fair comparison when choice exists)
 11. Reader quality (clear, proportionate, coherent)
+
+**Scope by artifact:**
+- **Question Map audit:** the whole source against the map — omitted explicit questions, attribution, classification, compound splits, dissenting views, and the Research Tasks list (a HIGH-priority researchable question without a task, or questions grouped by topic rather than shared evidence, is a finding). Read `source.md` once in full.
+- **Research Packet audit:** one packet covers one research task (frontmatter `questions`). Audit only those questions: their fidelity to the source and the Question Map, and checks 3–10 on the packet's claims and evidence. Other questions are out of scope; do not report on them. Read only the source regions the packet and its Question Map entries anchor to.
 
 **Skip only genuinely inapplicable checks** — state why if material.
 

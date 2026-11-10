@@ -141,3 +141,60 @@ created_at: "2026-11-08T10:00:00Z"
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
+
+
+PACKET = """---
+artifact_type: "research_packet"
+version: "v1"
+run_id: "2026-11-10-test"
+created_by: "quant-researcher"
+created_at: "2026-11-10T10:00:00Z"
+research_task: "T1"
+questions: {questions}
+source_refs:
+  - path: "runs/.work/2026-11-10-test/source.md"
+    type: "conversation"
+---
+
+## Q1 — test
+
+### Claims
+
+**Claim Q1.C1** — a claim
+- **Claim ID:** Q1.C1
+- **Type:** FACT
+- **Evidence IDs:** [E1]
+- **Confidence:** HIGH
+- **Depends on:** []
+
+### Evidence
+
+**Evidence E1:** a source
+- **Evidence ID:** E1
+- **Type:** USER_SUPPLIED
+- **Source:** source.md
+- **Access status:** USER_SUPPLIED
+- **Source ref:** line 1
+- **Claims supported:** [Q1.C1]
+- **Date accessed:** 2026-11-10
+"""
+
+
+class TestPerTaskPacketScope:
+    """A per-task packet's claims must belong to its declared questions."""
+
+    def _validate(self, tmp_path, questions):
+        from validate_artifact import ArtifactValidator
+
+        f = tmp_path / "02-research-T1-v1.md"
+        f.write_text(PACKET.format(questions=questions), encoding="utf-8")
+        return ArtifactValidator().validate_file(f)
+
+    def test_claims_inside_scope_pass(self, tmp_path):
+        result = self._validate(tmp_path, '["Q1"]')
+        assert result.valid, result.findings
+
+    def test_claims_outside_scope_rejected(self, tmp_path):
+        result = self._validate(tmp_path, '["Q2"]')
+        assert not result.valid
+        assert any("outside" in str(e) for e in result.findings)

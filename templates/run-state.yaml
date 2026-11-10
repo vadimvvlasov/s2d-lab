@@ -9,11 +9,16 @@ artifacts:
   question_map:
     current_version: "v1"
     cycle_count: 0
-    status: "submitted_for_review"  # draft | submitted_for_review | pass | changes_requested | escalated
-  research_packet:
+    status: "submitted_for_review"  # draft | submitted_for_review | pass | changes_requested | escalated | excluded (research task dropped after 3 cycles)
+  # One research_T<n> per research task from the Question Map (## Research Tasks)
+  research_T1:
     current_version: "v1"
     cycle_count: 0
     status: "submitted_for_review"
+  research_T2:
+    current_version: null
+    cycle_count: 0
+    status: "not_started"
   final_report:
     current_version: null
     cycle_count: 0
@@ -23,7 +28,7 @@ change_requests:
   # Example:
   # - cr_id: "CR-001"
   #   finding_id: "F-001"
-  #   artifact: "research_packet"
+  #   artifact: "research_T1"
   #   reviewed_version: "v1"
   #   target_version: "v2"
   #   severity: "MAJOR"
@@ -34,7 +39,7 @@ change_requests:
 verification_history:
   # Example:
   # - review_id: "REV-001"
-  #   review_scope: "research_packet"
+  #   review_scope: "research_T1"
   #   artifact_version: "v1"
   #   verdict: "CHANGES_REQUESTED"  # PASS | PASS_WITH_LIMITATIONS | CHANGES_REQUESTED | BLOCKED
   #   findings_count: 2

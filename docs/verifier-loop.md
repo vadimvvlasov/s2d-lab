@@ -49,14 +49,16 @@ Targeted verification after CR fixes, applying **all 12 checks** to:
 ### 1. Source intake
 The Research Lead stores the original conversation in `runs/.work/<run-id>/source.md` and records the run ID and timestamp. This source reference is passed to all subagents.
 
-### 2. Question Map v1
-The Conversation Analyst extracts questions and produces Question Map v1.
+### 2. Question Map v1 and its audit
+The Conversation Analyst extracts questions and produces Question Map v1, ending with `## Research Tasks`: at most 4 tasks, one per researchable question unless two need the same evidence or form one decision. The Auditor checks the map against the whole source (omissions, attribution, task list) before research starts.
 
-### 3. Research Packet v1
-The Quant Researcher answers questions, compares options, and produces Research Packet v1.
+### 3. Research Packet per task
+For each research task, one at a time, the Quant Researcher produces `02-research-T<n>-v1.md` covering only that task's questions (frontmatter `research_task`, `questions`; the validator rejects claims outside them).
 
-### 4. Research audit (cycle 0)
-The Independent Auditor reviews the Question Map and Research Packet, checking:
+Why per task: one packet for all questions grew the researcher's context past 120k tokens on the local model and failed opencode's compaction (run 2026-11-10); a CR on one question forced a new version and recheck of the whole packet. Per task, each agent call stays small, and rework, cycle count and exclusion are per task.
+
+### 4. Research audit per task (cycle 0)
+The Independent Auditor reviews one task packet (`03-verification-research-T<n>-v1.md`), checking for its questions:
 - Question attribution and extraction fidelity
 - Source accessibility and verification status
 - Calculations and evidence quality
@@ -68,6 +70,8 @@ The auditor produces a Verification Report with verdict:
 - `PASS_WITH_LIMITATIONS`: no blocker; limitations explicit and bounded
 - `CHANGES_REQUESTED`: `BLOCKER` or `MAJOR` requires fix
 - `BLOCKED`: review cannot be completed (e.g., source unavailable)
+
+A research task whose `BLOCKER`/`MAJOR` findings survive 3 cycles becomes `excluded`: its questions leave the report's answers and are listed as open questions. Its unresolved CRs do not block release of the other tasks.
 
 ### 5. Rework loop (max 3 cycles)
 For each `BLOCKER` or `MAJOR` finding:

@@ -360,6 +360,23 @@ class ArtifactValidator:
         # Build claim ID set for existence checks (D2.1.1)
         all_claim_ids = {claim.get("id", "") for claim in claims}
 
+        # Per-task packets declare their questions; claims must stay inside them
+        scope = fm.get("questions")
+        if scope is not None:
+            if not isinstance(scope, list) or not all(
+                isinstance(q, str) and re.match(r"^Q\d+$", q) for q in scope
+            ):
+                result.add_error("frontmatter", f"questions must be a list like [\"Q1\", \"Q3\"], got {scope!r}")
+            else:
+                outside = sorted(
+                    cid for cid in all_claim_ids if cid.split(".")[0] not in scope
+                )
+                if outside:
+                    result.add_error(
+                        "content",
+                        f"Claims outside the packet's questions {scope}: {', '.join(outside)}",
+                    )
+
         # Validate claim IDs (format Q{N}.C{M})
         claim_id_pattern = r"^Q\d+\.C\d+$"
         for claim in claims:

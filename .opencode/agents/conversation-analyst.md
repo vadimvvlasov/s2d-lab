@@ -109,11 +109,23 @@ resolution_notes: |
 
 ## Missing Inputs
 - <input needed but absent>
+
+## Research Tasks
+- T1: Q1 — <one line: why it is worth researching>
+- T2: Q3, Q5 — research together: <the shared evidence or decision>
 ```
 
 - Use `### Q<n> — ` headings only for extracted questions; everything else is a bullet.
 - Omit a section that would be empty.
 - Question IDs are stable across revisions; new questions get the next number; retired IDs are never reused.
+
+### Research Tasks
+
+Each task is researched and audited separately, by an agent that sees only that task's questions. So:
+- One task per researchable question, in priority order (HIGH first). At most 4 tasks (the report covers at most 3 core questions); lower-priority questions beyond that are listed under Not Researchable with reason "below research cut".
+- Put two or three questions in one task only when they need the same evidence or form one decision (e.g. "is X cheap?" and "should I buy X?"). Never group by topic alone.
+- `RHETORICAL_OR_JOKE` and not-researchable questions get no task.
+- Task IDs follow priority; on a revision keep existing task IDs and their question sets unless a CR changes them.
 
 ### Size budget
 
