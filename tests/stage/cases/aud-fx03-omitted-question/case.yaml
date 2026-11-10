@@ -1,0 +1,25 @@
+description: Auditor catches an explicit question omitted from the Question Map (seeded, fx03)
+fixture: tests/fixtures/03-omitted-question.md
+agent: independent-auditor
+output: 02-verification-question-map-v1.md
+prompt: |
+  Audit mode: baseline. Cycle: 0.
+  Artifact under review: question_map v1 at {run_dir}/01-question-map-v1.md
+  Original conversation (accessible): {run_dir}/source.md
+  Run ID: {run_id}. Current timestamp: {now}.
+  Output path for your verification report: {output}
+
+  Web access is disabled for this run; a Question Map audit needs only the conversation.
+
+  Produce the verification report with schema-conformant frontmatter and apply the
+  artifact-aware baseline checks per docs/audit-checklist.md. Write the report to the
+  output path yourself.
+expect:
+  verdict: [CHANGES_REQUESTED]
+  findings:
+    - name: "omitted explicit question (Eric, correlation), MAJOR+, routed to analyst"
+      severity: [MAJOR, BLOCKER]
+      category: [question]
+      responsible: conversation-analyst
+      mentions: ["Eric", "корреляц|correlation"]
+  inputs_unchanged: [01-question-map-v1.md, source.md]

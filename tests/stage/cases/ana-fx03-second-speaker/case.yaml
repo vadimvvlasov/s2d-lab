@@ -1,0 +1,19 @@
+description: Analyst keeps the second speaker's explicit question (Eric, gold-equity correlation)
+fixture: tests/fixtures/03-omitted-question.md
+agent: conversation-analyst
+output: 01-question-map-v1.md
+prompt: |
+  Source path: {run_dir}/source.md
+  Version: v1. Run ID: {run_id}. Current timestamp: {now}.
+  Output path: {output}
+
+  Produce Question Map v1 with schema-conformant YAML frontmatter per docs/artifact-schema.md
+  and write it to the output path yourself.
+expect:
+  questions:
+    min: 2
+    max: 4
+    each:
+      - {name: "gold in crises, explicit, Dana", class: EXPLICIT_QUESTION, raised_by: Dana, mentions: ["кризис|cris"]}
+      - {name: "gold-equity correlation, explicit, Eric", class: EXPLICIT_QUESTION, raised_by: Eric, mentions: ["корреляц|correlation"]}
+  max_words: 900

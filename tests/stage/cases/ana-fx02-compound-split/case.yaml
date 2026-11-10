@@ -1,0 +1,22 @@
+description: Analyst splits a three-part compound question into three explicit questions
+fixture: tests/fixtures/02-compound-question.md
+agent: conversation-analyst
+output: 01-question-map-v1.md
+prompt: |
+  Source path: {run_dir}/source.md
+  Version: v1. Run ID: {run_id}. Current timestamp: {now}.
+  Output path: {output}
+
+  Produce Question Map v1 with schema-conformant YAML frontmatter per docs/artifact-schema.md
+  and write it to the output path yourself.
+expect:
+  questions:
+    min: 3
+    max: 4
+    each:
+      - {name: "10-year US equity return, explicit, Charlie", class: EXPLICIT_QUESTION, raised_by: Charlie, mentions: ["10"]}
+      - {name: "stocks vs bonds, explicit, Charlie", class: EXPLICIT_QUESTION, raised_by: Charlie, mentions: ["облигац|bond"]}
+      - {name: "enter now or wait for correction, explicit, Charlie", class: EXPLICIT_QUESTION, raised_by: Charlie, mentions: ["коррекц|correction"]}
+  must_not_match:
+    - "(?i)you should (buy|enter) now"
+  max_words: 900

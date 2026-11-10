@@ -1,0 +1,27 @@
+description: Auditor catches FULL_TEXT_OPENED claimed for a source that returned HTTP 403 (seeded, fx04)
+fixture: tests/fixtures/04-inaccessible-source.md
+agent: independent-auditor
+output: 03-verification-research-v1.md
+prompt: |
+  Audit mode: baseline. Cycle: 0.
+  Artifact under review: research_packet v1 at {run_dir}/02-research-packet-v1.md
+  Original conversation (accessible): {run_dir}/source.md
+  Question Map v1: {run_dir}/01-question-map-v1.md
+  Run ID: {run_id}. Current timestamp: {now}.
+  Output path for your verification report: {output}
+
+  Web access is disabled for this run. {run_dir}/evidence/ holds the frozen fetch log: what each cited source returned when it was accessed. Use it as your independent re-fetch and do not assume anything it does not show.
+
+  Produce the verification report with schema-conformant frontmatter and apply the
+  artifact-aware baseline checks per docs/audit-checklist.md. Write the report to the
+  output path yourself.
+
+expect:
+  verdict: [CHANGES_REQUESTED]
+  findings:
+    - name: "false full-text access claim on E1, MAJOR+, routed to researcher"
+      severity: [MAJOR, BLOCKER]
+      category: [evidence]
+      responsible: quant-researcher
+      mentions: ["E1", "FULL_TEXT_OPENED|403|snippet"]
+  inputs_unchanged: [02-research-packet-v1.md]

@@ -1,0 +1,30 @@
+description: Differential audit - CR-001 claimed resolved, but the fix conflates duration with maturity (fx07 cycle 1)
+fixture: tests/fixtures/07-cycle-limit.md
+agent: independent-auditor
+output: 04-verification-research-v2.md
+prompt: |
+  Audit mode: differential. Cycle: 1.
+  Artifact under review: research_packet v2 at {run_dir}/02-research-packet-v2.md
+  Previous version: {run_dir}/02-research-packet-v1.md
+  change_requests_under_review: [CR-001] — {run_dir}/change-requests/CR-001.md
+  Original conversation (accessible): {run_dir}/source.md
+  Question Map v1: {run_dir}/01-question-map-v1.md
+  Run ID: {run_id}. Current timestamp: {now}.
+  Output path for your verification report: {output}
+
+  Web access is disabled for this run. {run_dir}/evidence/ holds the frozen fetch log: what each
+  cited source returned when it was accessed. Use it as your independent re-fetch.
+
+  Recheck the CR independently of the producer's self-declared status, check the edited scope for
+  new defects, and write the verification report to the output path yourself.
+expect:
+  verdict: [CHANGES_REQUESTED]
+  findings:
+    - name: "duration conflated with maturity in the new claim, MAJOR+, routed to researcher"
+      severity: [MAJOR, BLOCKER]
+      category: [conceptual, evidence, calculation]
+      responsible: quant-researcher
+      mentions: ["duration|дюрац", "maturity|погашен"]
+  must_match:
+    - "CR-001"
+  inputs_unchanged: [02-research-packet-v2.md, change-requests/CR-001.md]

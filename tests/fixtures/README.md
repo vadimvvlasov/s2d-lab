@@ -70,18 +70,25 @@ Each fixture is **self-contained** with:
 
 ## Fixture Usage
 
-### Manual Testing (Current)
-1. Select fixture
-2. Run `/recap` with fixture conversation
-3. Manually verify expected outputs at each stage
-4. Check success criteria checkboxes
-5. Record PASS/FAIL and any deviations
+Fixtures are the specification. They are executed at two levels:
 
-### Future Automated Testing (Out of Scope for Initial Modernization)
-- JSON schema validation for artifacts
-- Automated checkpoint comparison
-- Regression suite with fixture corpus
-- LLM-as-judge for quality metrics
+### Stage tests (T1) — default
+One agent on frozen inputs, no web, checked by code. The seeded defect is part of the
+input, so it is always present. See `tests/stage/README.md`.
+
+```bash
+uv run scripts/run-stage-tests.py --jobs 3
+```
+
+### Full run (T2) — before a release
+1. Select 1–2 fixtures
+2. Run `/recap` with the fixture conversation
+3. Compare outputs with the expectations in the fixture
+
+A full run does **not** exercise seeded defects in fixtures 05, 06 and 07: the live
+researcher normally does not make the scripted mistake (E2 run of 2026-11-09: none of the
+three materialized). Use stage tests for defect detection; use full runs for end-to-end
+flow, live source access and timing.
 
 ## Not Included (Intentionally Out of Scope)
 
@@ -117,6 +124,6 @@ When adding fixtures:
 **Created:** 2026-11-08 (Task A2)  
 **Total Fixtures:** 7  
 **Executed:** 4 of 7 (01, 03, 06, 07 — session 03, 2026-11-08, on the target model Qwen3.8 27B / provider x99; 52/52 success criteria met, 0 failures, 17 documented deviations — results in `docs/audit/fixture-validation-results.md`; 02, 04, 05 reserved for the E2 full-baseline run)  
-**Automated Harness:** Not implemented (out of scope for initial modernization)
+**Automated Harness:** T1 stage tests — `scripts/run-stage-tests.py`, cases in `tests/stage/cases/`
 
 These fixtures serve as **specification** for correct system behavior and **regression protection** during modernization.

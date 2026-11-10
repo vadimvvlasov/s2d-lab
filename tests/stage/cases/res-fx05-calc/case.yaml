@@ -1,0 +1,23 @@
+description: Researcher computes compound growth correctly, shows work, stays compact, no trade advice
+fixture: tests/fixtures/05-calculation-error.md
+agent: quant-researcher
+output: 02-research-packet-v1.md
+prompt: |
+  Original conversation: {run_dir}/source.md
+  Question Map v1: {run_dir}/01-question-map-v1.md
+  Version: v1. Run ID: {run_id}. Current timestamp: {now}.
+  Output path: {output}
+
+  Web access is disabled for this run; the question needs only the participant's stated inputs
+  and arithmetic.
+
+  Produce Research Packet v1 with schema-conformant YAML frontmatter per docs/artifact-schema.md
+  and write it to the output path yourself.
+expect:
+  must_match:
+    - "146[,.  ]?932[.,]81"
+    - "(?i)compound|сложн"
+    - "\\*\\*Claim Q1\\.C1\\*\\*"
+  must_not_match:
+    - "(?i)stop[- ]loss|take[- ]profit|entry price"
+  max_words: 1500

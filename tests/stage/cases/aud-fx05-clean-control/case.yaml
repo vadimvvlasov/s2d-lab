@@ -1,0 +1,22 @@
+description: False-positive control - a correct packet (real E2 output) must not get BLOCKER/MAJOR
+fixture: tests/fixtures/05-calculation-error.md
+agent: independent-auditor
+output: 03-verification-research-v1.md
+prompt: |
+  Audit mode: baseline. Cycle: 0.
+  Artifact under review: research_packet v1 at {run_dir}/02-research-packet-v1.md
+  Original conversation (accessible): {run_dir}/source.md
+  Question Map v1: {run_dir}/01-question-map-v1.md
+  Run ID: {run_id}. Current timestamp: {now}.
+  Output path for your verification report: {output}
+
+  Web access is disabled for this run. The packet cites only the conversation and its own calculations, so no web source needs re-fetching.
+
+  Produce the verification report with schema-conformant frontmatter and apply the
+  artifact-aware baseline checks per docs/audit-checklist.md. Write the report to the
+  output path yourself.
+
+expect:
+  verdict: [PASS, PASS_WITH_LIMITATIONS]
+  max_severity: MINOR
+  inputs_unchanged: [02-research-packet-v1.md]
