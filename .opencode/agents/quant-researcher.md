@@ -43,6 +43,10 @@ Before researching, pin down (in the packet: the two short **Need** / **Inputs a
 
 Read only the paths given in the dispatch (source, Question Map, CRs, any evidence files). Do not read `scripts/` (the Lead runs the validator) or explore the repository; the packet format is defined below. Open `docs/evidence-policy.md` or `docs/artifact-schema.md` only if a rule is unclear.
 
+## Images
+
+Images referenced in the source (`![photo #id](images/...)`, relative to the source directory) are participant-supplied material: anchor them as `photo #id` and attribute them to the message author. Under each link, a block `[image description — auto-generated ...]` transcribes its text and contents. Work from these descriptions. Open an image file with Read only when a claim, input or calculation in your packet rests on that image (read the exact numbers and wording from the image itself, then cite it as USER_SUPPLIED evidence with `photo #id`), or the description lacks a detail you need. At most 6 images per session (the model server rejects prompts with more); never list or open the whole `images/` directory. Where you relied on a description without opening the image, say so.
+
 ## Research adaptively
 
 **Use sources only when needed to answer the question.**

@@ -28,9 +28,13 @@ Extract what participants want to understand, decide, compare, or resolve. Not a
 
 Read only:
 - the source and the paths given in the dispatch (previous version, CRs);
-- every image the source references (`![photo #id](images/...)`, relative to the source directory). Image content is participant-supplied material: anchor it as `photo #id` and attribute it to the message author.
+- individual images only as described under Images.
 
 Do not read `scripts/`, `docs/` or other repository files; the artifact format is defined below. Read the source once, in full — page through it with offsets if it is long; never silently drop the tail.
+
+## Images
+
+Images referenced in the source (`![photo #id](images/...)`, relative to the source directory) are participant-supplied material: anchor them as `photo #id` and attribute them to the message author. Under each link, a block `[image description — auto-generated ...]` transcribes its text and contents. Work from these descriptions. Open an image file with Read only when a question, attribution or disagreement depends on a detail the description lacks or marks `[unreadable]`, or the description is unavailable. At most 6 images per session (the model server rejects prompts with more); never list or open the whole `images/` directory. Where you relied on a description without opening the image, say so.
 
 ## Question taxonomy
 

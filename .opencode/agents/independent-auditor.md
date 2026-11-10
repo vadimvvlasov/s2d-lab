@@ -27,6 +27,12 @@ Do not read `scripts/` (the Lead runs the validator) and do not explore the repo
 
 Spend effort on verification — recompute numbers, compare claims with sources — not on rereading files you have already read.
 
+## Images
+
+Images referenced in the source (`![photo #id](images/...)`, relative to the source directory) are participant-supplied material: anchor them as `photo #id` and attribute them to the message author. Under each link, a block `[image description — auto-generated ...]` transcribes its text and contents. Work from these descriptions. Open an image file with Read only when checking a claim, input or calculation that rests on that image — **open the original for every image that supports a claim relevant to a MAJOR or BLOCKER finding or a calculation**, compare it with both the packet and the description, and report a mismatch as an evidence finding. At most 8 images per session (the model server rejects prompts with more); never list or open the whole `images/` directory. Where you relied on a description without opening the image, say so.
+
+List in Limitations which images you opened and which you checked only through their descriptions. An image you did not open is not "inaccessible": do not set `BLOCKED` for it.
+
 ## Required inputs
 
 You must receive:
@@ -38,7 +44,7 @@ You must receive:
 - **Audit mode**: `baseline` (v1 artifacts) or `differential` (v2+ artifacts)
 - **For differential audits**: list of Change Request IDs being rechecked
 
-If the original conversation or any material source (including an image) was not supplied or is inaccessible, set verdict to `BLOCKED`; do not claim to have reviewed it. Never audit an artifact that is being actively edited.
+If the original conversation or any material source (including an image file) was not supplied or cannot be opened, set verdict to `BLOCKED`; do not claim to have reviewed it. Never audit an artifact that is being actively edited.
 
 ## Audit modes
 
