@@ -415,7 +415,9 @@ def run_case(case: dict, base: Path, results: Path, model: str, timeout: int, op
     res.checks = evaluate(case, dest)
     res.checks.append(Check(f"finished within {timeout}s", not res.timed_out, "format",
                             "killed at timeout; output evaluated as written" if res.timed_out else ""))
-    leaked = log.exists() and str(ROOT) in log.read_text(encoding="utf-8", errors="replace")
+    # A JSON string value starting with the repo path = a tool argument or a resolved
+    # file path. Plain mentions inside file contents (docs cite the repo path) do not count.
+    leaked = log.exists() and f'"{ROOT}' in log.read_text(encoding="utf-8", errors="replace")
     res.checks.insert(
         0, Check("sandbox isolation (no access to the real repository)", not leaked,
                  detail="opencode.log references the repository path" if leaked else ""),
