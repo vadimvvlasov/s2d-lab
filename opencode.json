@@ -5,6 +5,11 @@
   "permission": {
     "skill": {
       "*": "allow"
-    }
+    },
+    "execute": "deny",
+    "external_directory": "deny",
+    "filesystem_*": "deny",
+    "playwright_*": "deny",
+    "context7_*": "deny"
   }
 }

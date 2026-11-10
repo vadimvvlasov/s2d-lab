@@ -31,7 +31,10 @@ Turn the supplied conversation into an engaging, useful **Conversation Research 
 1. **Source intake:**
    - **Telegram export (default):** unless the user pasted a conversation into the session, run `uv run scripts/tg_export_to_source.py <arguments>` with the `/recap` arguments verbatim (none → newest export of `investment-decisions-with-ml` in `~/Downloads/Telegram Desktop`). On `TELEGRAM INTAKE OK`, use the printed `run_id`, `created_at` and `source` path as-is; do not rewrite `source.md`. Images referenced in it live in `runs/.work/<run-id>/images/`; each has an auto-generated description in `source.md`.
    - **Pasted conversation:** store it in `runs/.work/<run-id>/source.md` immediately.
+   - Run the intake command exactly as written: no `cd`, no `&&` chains, no extra commands — anything else is denied.
    - If intake fails and nothing was pasted, stop and show the intake error to the user.
+
+   **Permissions are hard limits.** If a tool call is denied, do not look for another route to the same effect (other tools, MCP servers, browsers, code runners, copying files outside the repository). Stop and report the denial to the user.
    
    Record run ID and timestamp (`date -u +%Y-%m-%dT%H:%M:%SZ` for later timestamps). This source and its `images/` must be accessible to every Auditor invocation. Agents work from the image descriptions in `source.md` and open individual images under their own rules; do not tell them to open every image, and do not open images yourself unless the final report needs a detail.
 
