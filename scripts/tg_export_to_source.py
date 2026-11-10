@@ -13,12 +13,25 @@ Without EXPORT_DIR, uses the newest ChatExport_* under
 
 Writes runs/.work/<run-id>/source.md and copies full-size photos to
 runs/.work/<run-id>/images/.
+
+Each photo gets a model-generated description (verbatim text, numbers, chart
+contents) inserted under its link, so agents can work from text and open only
+the images a material claim rests on. One vision call per image; results are
+cached by file hash in runs/.work/.image-descriptions/. Endpoint (OpenAI-compatible):
+S2D_VISION_URL (default x99), S2D_VISION_KEY or ~/.config/opencode/x99.key,
+S2D_VISION_MODEL (default: first model the server lists). --no-describe skips it.
 """
 
 from __future__ import annotations
 
 import argparse
+import base64
+import hashlib
+import json
+import os
 import re
+import urllib.error
+import urllib.request
 import shutil
 import sys
 from datetime import datetime
@@ -29,6 +42,91 @@ from bs4 import BeautifulSoup, Tag
 DEFAULT_CHAT = "investment-decisions-with-ml"
 DEFAULT_EXPORTS_ROOT = Path.home() / "Downloads" / "Telegram Desktop"
 REPO_ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_VISION_URL = "http://192.168.0.2:18020/v1"
+DEFAULT_VISION_KEY_FILE = Path.home() / ".config" / "opencode" / "x99.key"
+
+DESCRIBE_PROMPT = """You describe an image posted in a group chat for analysts who will work from your text.
+Message context (for orientation only; describe what the IMAGE shows): {context}
+
+Write plain text with these labelled parts:
+TYPE: chart | table | screenshot (app, news, post) | photo | meme | diagram | other — one line.
+TEXT: every visible text verbatim, in its original language: titles, labels, numbers with signs,
+units and currencies, dates, tickers, footnotes. Keep negations exactly (e.g. "не включены").
+Mark unreadable parts [unreadable]. Skip only UI chrome (status bar, buttons).
+DATA: for charts and tables: instrument/ticker, timeframe, axes and units, values printed on the image
+(last, high, low, labelled points), indicators, and any lines, arrows or circles drawn by the user and
+what they point to. For other images: the content that matters for an investment discussion.
+Describe only what is visible: no interpretation, prediction or advice. Be compact; TEXT may be long."""
+
+
+class Describer:
+    """One cached vision call per image."""
+
+    def __init__(self, cache_dir: Path) -> None:
+        self.url = os.environ.get("S2D_VISION_URL", DEFAULT_VISION_URL).rstrip("/")
+        key = os.environ.get("S2D_VISION_KEY")
+        if key is None and DEFAULT_VISION_KEY_FILE.is_file():
+            key = DEFAULT_VISION_KEY_FILE.read_text().strip()
+        self.key = key or ""
+        self.model = os.environ.get("S2D_VISION_MODEL")
+        self.cache_dir = cache_dir
+        self.stats = {"described": 0, "cached": 0, "failed": 0}
+        self.disabled_reason: str | None = None
+
+    def _request(self, path: str, body: dict | None, timeout: float) -> dict:
+        req = urllib.request.Request(
+            self.url + path,
+            data=json.dumps(body).encode() if body is not None else None,
+            headers={"Content-Type": "application/json", "Authorization": f"Bearer {self.key}"},
+        )
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return json.load(resp)
+
+    def describe(self, image: Path, context: str) -> str | None:
+        digest = hashlib.sha256(image.read_bytes()).hexdigest()
+        cached = self.cache_dir / f"{digest}.json"
+        if cached.is_file():
+            self.stats["cached"] += 1
+            return json.loads(cached.read_text(encoding="utf-8"))["description"]
+        if self.disabled_reason:
+            self.stats["failed"] += 1
+            return None
+        try:
+            if not self.model:
+                self.model = self._request("/models", None, 10)["data"][0]["id"]
+            mime = "image/png" if image.suffix.lower() == ".png" else "image/jpeg"
+            data = base64.b64encode(image.read_bytes()).decode()
+            reply = self._request(
+                "/chat/completions",
+                {
+                    "model": self.model,
+                    "temperature": 0,
+                    "max_tokens": 1500,
+                    "chat_template_kwargs": {"enable_thinking": False},
+                    "messages": [{"role": "user", "content": [
+                        {"type": "text", "text": DESCRIBE_PROMPT.format(context=context[:600] or "(none)")},
+                        {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{data}"}},
+                    ]}],
+                },
+                300,
+            )
+        except (urllib.error.URLError, TimeoutError, OSError, KeyError, IndexError, ValueError) as exc:
+            # Server down: stop trying for the remaining images, keep the intake usable.
+            self.disabled_reason = f"{type(exc).__name__}: {exc}"
+            self.stats["failed"] += 1
+            return None
+        choice = reply["choices"][0]
+        text = (choice["message"].get("content") or "").strip()
+        if not text:
+            self.stats["failed"] += 1
+            return None
+        if choice.get("finish_reason") == "length":
+            text += "\n[description truncated]"
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
+        cached.write_text(json.dumps({"image": image.name, "model": self.model, "description": text},
+                                     ensure_ascii=False, indent=1), encoding="utf-8")
+        self.stats["described"] += 1
+        return text
 
 
 def fail(msg: str) -> None:
@@ -91,7 +189,19 @@ def parse_date(title: str) -> datetime:
     return datetime.strptime(stamp, "%d.%m.%Y %H:%M:%S%z")
 
 
-def media_lines(body: Tag, export_dir: Path, images_dir: Path, msg_id: str, stats: dict) -> list[str]:
+def describe_block(describer: Describer | None, image: Path, context: str) -> list[str]:
+    if describer is None:
+        return []
+    text = describer.describe(image, context)
+    if text is None:
+        return ["[image description unavailable: open the image]"]
+    lines = [ln.rstrip() for ln in text.splitlines() if ln.strip()]
+    return ["[image description — auto-generated by a model, not the participant's words; "
+            "the image is the source]"] + [f"| {ln}" for ln in lines] + ["[end of image description]"]
+
+
+def media_lines(body: Tag, export_dir: Path, images_dir: Path, msg_id: str, stats: dict,
+                describer: Describer | None = None, context: str = "") -> list[str]:
     out = []
     for a in body.select("a.photo_wrap[href]"):
         rel = a["href"]
@@ -101,6 +211,7 @@ def media_lines(body: Tag, export_dir: Path, images_dir: Path, msg_id: str, stat
             shutil.copy2(src, dst)
             stats["photos"] += 1
             out.append(f"![photo #{msg_id}](images/{src.name})")
+            out.extend(describe_block(describer, dst, context))
         else:
             stats["missing"] += 1
             out.append(f"[photo #{msg_id} missing in export: {rel}]")
@@ -114,7 +225,8 @@ def media_lines(body: Tag, export_dir: Path, images_dir: Path, msg_id: str, stat
     return out
 
 
-def parse_messages(export_dir: Path, images_dir: Path) -> tuple[list[dict], dict]:
+def parse_messages(export_dir: Path, images_dir: Path,
+                   describer: Describer | None = None) -> tuple[list[dict], dict]:
     stats = {"photos": 0, "missing": 0}
     messages: list[dict] = []
     author = "?"
@@ -148,7 +260,8 @@ def parse_messages(export_dir: Path, images_dir: Path) -> tuple[list[dict], dict
                 fwd_text = text_of(fwd.find("div", class_="text", recursive=False))
 
             text = text_of(body.find("div", class_="text", recursive=False))
-            media = media_lines(body, export_dir, images_dir, msg_id, stats)
+            context = f"{author}: " + " ".join(t for t in (text, fwd_text) if t)
+            media = media_lines(body, export_dir, images_dir, msg_id, stats, describer, context)
             messages.append(
                 {
                     "id": msg_id,
@@ -181,7 +294,10 @@ def render(chat: str, export_dir: Path, run_id: str, messages: list[dict], stats
         f"# Telegram chat: {chat}",
         "",
         "Format: `[#id YYYY-MM-DD HH:MM] Author: text`. `↪ #id` = reply to message id. "
-        "Images are in `images/` next to this file; open each one referenced below.",
+        "Images are in `images/` next to this file. Under each image link, a block marked "
+        "`[image description — auto-generated ...]` gives its text and contents; it is a reading aid, "
+        "the image itself is the source. Open an image when a material claim or number rests on it "
+        "or the description lacks a detail you need.",
         "",
     ]
     body = []
@@ -205,6 +321,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--exports-root", type=Path, default=DEFAULT_EXPORTS_ROOT)
     ap.add_argument("--run-id", default=None)
     ap.add_argument("--out-root", type=Path, default=REPO_ROOT / "runs" / ".work")
+    ap.add_argument("--no-describe", action="store_true", help="skip model descriptions of images")
     args = ap.parse_args(argv)
 
     export_dir = args.export_dir.expanduser() if args.export_dir else find_export(args.exports_root, args.chat)
@@ -213,12 +330,14 @@ def main(argv: list[str] | None = None) -> int:
         fail(f"{export_dir}/messages.html not found{hint}")
     chat = chat_title(export_dir / "messages.html") or args.chat
 
-    run_id = args.run_id or datetime.now().strftime("%Y%m%d-%H%M%S") + "-tg"
+    started = datetime.now().astimezone()
+    run_id = args.run_id or started.strftime("%Y-%m-%d-tg-%H%M%S")
     run_dir = args.out_root / run_id
     images_dir = run_dir / "images"
     images_dir.mkdir(parents=True, exist_ok=True)
 
-    messages, stats = parse_messages(export_dir, images_dir)
+    describer = None if args.no_describe else Describer(args.out_root / ".image-descriptions")
+    messages, stats = parse_messages(export_dir, images_dir, describer)
     if not messages:
         fail(f"no messages parsed from {export_dir}")
 
@@ -227,11 +346,18 @@ def main(argv: list[str] | None = None) -> int:
 
     print("TELEGRAM INTAKE OK")
     print(f"run_id: {run_id}")
+    print(f"created_at: {started.isoformat(timespec='seconds')}")
     print(f"source: {source}")
     print(f"chat: {chat}")
     print(f"export_dir: {export_dir}")
     print(f"range: {messages[0]['date']:%Y-%m-%d %H:%M} .. {messages[-1]['date']:%Y-%m-%d %H:%M}")
     print(f"messages: {len(messages)}  images: {stats['photos']}  images_missing: {stats['missing']}")
+    if describer is not None:
+        d = describer.stats
+        line = f"image descriptions: {d['described']} new, {d['cached']} cached, {d['failed']} unavailable"
+        if describer.disabled_reason:
+            line += f" ({describer.disabled_reason})"
+        print(line)
     return 0
 
 
