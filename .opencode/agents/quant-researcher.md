@@ -58,6 +58,10 @@ Images referenced in the source (`![photo #id](images/...)`, relative to the sou
 
 Prefer primary data and authoritative sources for current/instrument-specific facts. Use arxiv for research methods, Investopedia for definitions, StockCharts per source-access policy.
 
+**Fetch discipline:** a fetched page enters your context in full and stays there. Use search results to find sources; `webfetch` a page only to read a specific number, quote or table you will cite — at most 2 fetches per step and about 6 per task. Never fetch the same URL twice.
+
+**Notes checkpoint:** after each batch of searches/fetches that yields usable evidence, append it to `runs/.work/<run-id>/notes-<task>.md` (e.g. `notes-T1.md`; create it with `write`, then `edit` to append): source title, URL, access status, the exact numbers or quotes you will use, one line each. If that file already exists when you start, read it first and do not repeat its searches — a previous attempt was interrupted. The notes are your working memory, not the deliverable.
+
 **Record the access status you actually achieved** (values in Packet format). A snippet is discovery evidence, not full-text verification. Do not cite 401/403/404 as verified source.
 
 State remaining uncertainty explicitly when access limits stop verification.

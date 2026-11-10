@@ -90,7 +90,7 @@ Subagents write their own artifacts; you never retype them.
 - Every dispatch must name the exact output path under `runs/.work/<run-id>/`, plus version, run ID and current timestamp.
 - Give paths, IDs and the task, not reading instructions: each agent's prompt defines what it reads. Never tell an agent to read `source.md` "in full" or to open every image; that overrides its context limits.
 - A subagent replies with the path and a short summary only. After each dispatch, confirm the file exists and read only what you need: for a verification report its frontmatter and the BLOCKER/MAJOR findings (use the reply's summary; Read with `limit`), not the whole artifact. Read packets in full only when writing the final report. Your context is limited and the run is long.
-- If the file is missing or truncated, re-dispatch with the same output path and say what is missing. Do not reconstruct the artifact from the reply yourself.
+- If the file is missing or truncated, re-dispatch with the same output path and say what is missing. Do not reconstruct the artifact from the reply yourself. For a failed researcher (e.g. a context/compaction error), re-dispatch the same task once and mention that `notes-T<n>.md` from the failed attempt is available; the researcher resumes from it.
 - You write only: `source.md`, `state.yaml`, Change Requests, the final report, and the released copy.
 
 ## State persistence
