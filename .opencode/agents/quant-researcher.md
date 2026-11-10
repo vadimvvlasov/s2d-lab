@@ -41,7 +41,7 @@ Before researching, pin down (in the packet: the two short **Need** / **Inputs a
 
 ## What to read
 
-Read only the paths given in the dispatch (source, Question Map, CRs, any evidence files). Do not read `scripts/` (the Lead runs the validator) or explore the repository; the packet format is defined below. Open `docs/evidence-policy.md` or `docs/artifact-schema.md` only if a rule is unclear.
+Read only the paths given in the dispatch (source, Question Map, CRs, any evidence files). Read the Question Map in full; from `source.md` read only the regions its anchors point to (Read with `offset`/`limit`, a few lines of context around each anchor) — not the whole file. Never re-read a file or region you have already read in this session; your context is limited and a re-read can overflow it. Do not read `scripts/` (the Lead runs the validator) or explore the repository; the packet format is defined below. Open `docs/evidence-policy.md` or `docs/artifact-schema.md` only if a rule is unclear.
 
 ## Images
 

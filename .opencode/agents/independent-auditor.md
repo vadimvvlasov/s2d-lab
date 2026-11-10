@@ -25,6 +25,8 @@ Read only:
 
 Do not read `scripts/` (the Lead runs the validator) and do not explore the repository with list/glob/grep beyond the given paths. The report frontmatter is defined below; open `docs/artifact-schema.md` only if a field is unclear.
 
+Read the artifacts under review in full. Read `source.md` at most once in full (for question fidelity and omissions); for later checks rely on what you read and the anchors. Never re-read a file or region you have already read; your context is limited and a re-read can overflow it.
+
 Spend effort on verification — recompute numbers, compare claims with sources — not on rereading files you have already read.
 
 ## Images
