@@ -19,7 +19,6 @@ mistake the fixture expects and the auditor is never actually tested on it.
 
 ```bash
 uv run scripts/run-stage-tests.py                 # all cases, one at a time
-uv run scripts/run-stage-tests.py --jobs 3        # three cases in parallel
 uv run scripts/run-stage-tests.py -k aud-fx06     # cases whose id contains the text
 uv run scripts/run-stage-tests.py --agent independent-auditor
 uv run scripts/run-stage-tests.py --list
@@ -31,6 +30,12 @@ Model: `x99/qwen3.8-27b` by default; override with `--model provider/model` or
 `S2D_T1_MODEL`. Results (agent output, `opencode.log`, `summary.md`, `summary.json`
 with time, steps and tokens per case) go to `runs/.work/t1-results/<stamp>/`.
 
+**Run cases one at a time on the local model.** On x99 (RTX 3090, `max_model_len`
+131072) the vLLM KV cache holds about one full context (`kv_cache_max_concurrency` ≈ 1.05),
+and an auditor reaches 45–65k tokens. Three parallel cases caused preemptions and took
+35–40 min per audit; sequential runs take ~4–5 min per audit (2026-11-10). `--jobs` > 1
+only makes sense on a server with spare KV cache.
+
 Exit code is 0 when every **behavior** check passes. **Format** checks (schema
 validity, frontmatter verdict equal to body verdict, word budget) are reported and
 fail the run only with `--strict`.
@@ -40,12 +45,17 @@ fail the run only with `--strict`.
 1. The runner copies `.opencode/`, `opencode.json`, `AGENTS.md`, `docs/`, `templates/`
    and `scripts/` into a temporary sandbox outside the repository.
 2. In the sandbox copy only, the agent's frontmatter is patched: `mode: primary` (so it
-   can be called directly) and `websearch`/`webfetch: deny`. The prompt body is the
-   real one.
+   can be called directly), `websearch`/`webfetch: deny`, and MCP tools denied
+   (`execute`, `filesystem_*`, `playwright_*`, `context7_*` — a global filesystem MCP
+   bypasses edit permissions and the sandbox, a browser bypasses the web ban). The
+   prompt body is the real one. opencode is started with `PWD` set to the sandbox:
+   it resolves the project directory from `$PWD`, not from the process cwd.
 3. `inputs/` is copied to `runs/.work/2026-11-08-t1-<case-id>/` in the sandbox.
 4. `opencode run --standalone --auto --agent <agent>` gets the dispatch prompt from
    `case.yaml`. The agent must write its artifact to the given output path.
-5. The output file is parsed and checked against `expect`.
+5. The output file is parsed and checked against `expect`. A case also fails if its
+   log mentions the real repository path (isolation check). A timeout is a format
+   check: the output written before the kill is still evaluated.
 
 ## Cases
 

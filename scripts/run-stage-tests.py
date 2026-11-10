@@ -49,6 +49,9 @@ CASES_DIR = ROOT / "tests" / "stage" / "cases"
 RESULTS_DIR = ROOT / "runs" / ".work" / "t1-results"
 SANDBOX_COPY = [".opencode", "opencode.json", "AGENTS.md", "docs", "templates", "scripts"]
 DEFAULT_MODEL = os.environ.get("S2D_T1_MODEL", "x99/qwen3.8-27b")
+# MCP servers seen in user/global configs. Their tools bypass edit permissions, the
+# sandbox and the web ban (filesystem rooted at $HOME, a browser), so tests deny them.
+MCP_SERVERS = ["filesystem", "playwright", "context7"]
 SEVERITY_RANK = {"MINOR": 1, "MAJOR": 2, "BLOCKER": 3}
 VERDICTS = ("PASS_WITH_LIMITATIONS", "CHANGES_REQUESTED", "BLOCKED", "PASS")
 
@@ -160,6 +163,7 @@ class CaseResult:
     tokens: dict = field(default_factory=dict)
     steps: int | None = None
     error: str | None = None
+    timed_out: bool = False
 
     def passed(self, strict: bool) -> bool:
         if self.error:
@@ -291,7 +295,8 @@ def patch_agent(path: Path, web: bool) -> None:
     if not web:
         head = re.sub(r"^(\s+web(?:search|fetch)):.*$", r"\1: deny", head, flags=re.M)
     # MCP tools (e.g. a global filesystem server) bypass edit permissions and the sandbox.
-    head = re.sub(r"^permission:\s*$", "permission:\n  execute: deny", head, count=1, flags=re.M)
+    mcp_deny = "".join(f'\n  "{s}_*": deny' for s in MCP_SERVERS)
+    head = re.sub(r"^permission:\s*$", "permission:\n  execute: deny" + mcp_deny, head, count=1, flags=re.M)
     path.write_text(head + sep + body, encoding="utf-8")
 
 
@@ -304,7 +309,7 @@ def global_mcp_servers() -> list[str]:
     except (OSError, ValueError):
         return []
     servers = mcp.get("servers", mcp) if isinstance(mcp, dict) else {}
-    return [k for k, v in servers.items() if isinstance(v, dict)]
+    return sorted({*MCP_SERVERS, *(k for k, v in servers.items() if isinstance(v, dict))})
 
 
 def sandbox_env(sandbox: Path) -> dict:
@@ -384,7 +389,7 @@ def run_case(case: dict, base: Path, results: Path, model: str, timeout: int) ->
         if proc.returncode != 0:
             res.error = f"opencode exited with {proc.returncode} (see opencode.log)"
     except subprocess.TimeoutExpired:
-        res.error = f"timeout after {timeout}s"
+        res.timed_out = True
     except FileNotFoundError:
         res.error = "opencode not found in PATH"
     res.seconds = round(time.monotonic() - start, 1)
@@ -394,6 +399,8 @@ def run_case(case: dict, base: Path, results: Path, model: str, timeout: int) ->
         shutil.copy2(log, dest / "opencode.log")
         res.tokens, res.steps = read_usage(log)
     res.checks = evaluate(case, dest)
+    res.checks.append(Check(f"finished within {timeout}s", not res.timed_out, "format",
+                            "killed at timeout; output evaluated as written" if res.timed_out else ""))
     leaked = log.exists() and str(ROOT) in log.read_text(encoding="utf-8", errors="replace")
     res.checks.insert(
         0, Check("sandbox isolation (no access to the real repository)", not leaked,
@@ -451,11 +458,13 @@ def print_result(r: CaseResult, strict: bool) -> None:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("-k", dest="keyword", help="run only cases whose id contains this text")
+    ap.add_argument("-k", dest="keyword", help="run only cases whose id contains this text (comma-separated: any of)")
     ap.add_argument("--agent", help="run only cases for this agent")
     ap.add_argument("--model", default=DEFAULT_MODEL, help=f"provider/model (default {DEFAULT_MODEL}; env S2D_T1_MODEL)")
-    ap.add_argument("--jobs", type=int, default=1, help="cases to run in parallel (default 1)")
-    ap.add_argument("--timeout", type=int, default=1800, help="seconds per case (default 1800)")
+    ap.add_argument("--jobs", type=int, default=1,
+                    help="cases to run in parallel (default 1; on a single 24 GB GPU more jobs overflow "
+                         "the KV cache and every case gets slower)")
+    ap.add_argument("--timeout", type=int, default=3600, help="seconds per case (default 3600)")
     ap.add_argument("--strict", action="store_true", help="format checks also fail the run")
     ap.add_argument("--list", action="store_true", help="list cases and exit")
     ap.add_argument("--dry-run", action="store_true", help="build sandboxes and print prompts; do not call the model")
@@ -465,7 +474,8 @@ def main() -> int:
 
     cases = load_cases()
     if args.keyword:
-        cases = [c for c in cases if args.keyword in c["id"]]
+        words = [w for w in args.keyword.split(",") if w]
+        cases = [c for c in cases if any(w in c["id"] for w in words)]
     if args.agent:
         cases = [c for c in cases if c["agent"] == args.agent]
     if not cases:
