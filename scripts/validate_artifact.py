@@ -253,9 +253,10 @@ class ArtifactValidator:
                 if "type" not in ref:
                     result.add_error("frontmatter", f"source_refs[{i}] missing 'type'")
 
-        # Revision fields if v2+
+        # Revision fields if v2+ (a verification report is a new review, not a revision
+        # of the previous report: its version tracks the recheck, no revision fields)
         version = fm.get("version")
-        if version in {"v2", "v3", "v4"}:
+        if version in {"v2", "v3", "v4"} and fm.get("artifact_type") != "verification_report":
             if "revision_of" not in fm:
                 result.add_error(
                     "frontmatter", f"version {version} requires 'revision_of' field"

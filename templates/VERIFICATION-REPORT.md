@@ -24,7 +24,7 @@
 
 ## Findings
 
-*(Independent-Auditor: append findings here incrementally as you discover them with `edit`)*
+*(Independent-Auditor: one block per finding; the whole report is written with one `write` call after the analysis)*
 
 ### Finding F-001
 **Severity**: BLOCKER / MAJOR / MINOR  

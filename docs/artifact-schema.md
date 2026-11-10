@@ -379,7 +379,7 @@ artifacts:
 - Max version is v4 (cycle limit)
 
 ### Revision Rules
-- If version > v1: must have `revision_of` and `change_requests_addressed`
+- If version > v1: must have `revision_of` and `change_requests_addressed` (question map, research packet, final report). Verification reports are exempt: their version tracks the recheck, and the CRs under review go in `change_requests_under_review`.
 - `revision_of` must be previous version (v2 revises v1, v3 revises v2, etc.)
 
 ### Source Reference Rules

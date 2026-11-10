@@ -4,6 +4,7 @@ mode: subagent
 steps: 12
 permission:
   read: allow
+  question: deny
   edit:
     "*": deny
     "runs/.work/**": allow

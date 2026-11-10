@@ -19,7 +19,7 @@ First-pass verification focused on **6 critical checks** that catch foundational
 
 **Rationale**: v1 is exploratory. Focus on high-impact issues that invalidate conclusions. Defer detailed polish (conceptual nuance, option exhaustiveness, reader quality) to differential audits after initial revision.
 
-**Output discipline**: Auditor writes its own report file incrementally (`write` header → `edit`-append findings → `edit`-append verdict) to avoid output truncation and loss at the step limit. Target <6000 words.
+**Output discipline**: Auditor finishes the analysis, then writes its own report file with one `write` call (two parts — `write` + one appended `edit` — if longer than ~2,000 words). Each extra edit is another model step over the whole 40–65k-token context. Target <6000 words.
 
 ### Differential Audit (v2+ artifacts)
 Targeted verification after CR fixes, applying **all 12 checks** to:
