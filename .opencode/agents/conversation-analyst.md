@@ -1,7 +1,7 @@
 ---
 description: Extracts questions, concerns, disagreements and decision context from conversation with stable source anchors
 mode: subagent
-steps: 12
+steps: 20
 permission:
   read: allow
   question: deny

@@ -44,7 +44,7 @@ Turn the supplied conversation into an engaging, useful **Conversation Research 
 
 3. **Question Map audit (cycle 0):** `independent-auditor`, baseline mode, artifact type `question_map`: source path, Question Map path and version. Output: `runs/.work/<run-id>/03-verification-question-map-v1.md`. Rework it (step 5) before research starts if it has BLOCKER/MAJOR findings — research tasks come from this map.
 
-4. **Per research task** (`T1`, `T2`, ... from the map's `## Research Tasks`, in order; one task fully done before the next starts):
+4. **Per research task** (`T1`, `T2`, ... from the map's `## Research Tasks`, in order; one task fully done before the next starts). At most 4 tasks: if the map lists more, research the first 4 and report the rest as open questions.
    a. **Research Packet:** `quant-researcher` with source path, Question Map path and version, the task line (`T2: Q3, Q5`), version "v1", run ID, timestamp. Packet format is in the researcher's own prompt. Output: `runs/.work/<run-id>/02-research-T2-v1.md`.
    b. **Research audit (cycle 0):** `independent-auditor`, baseline mode, artifact type `research_packet`: source path, Question Map path and version, the packet path and version. Output: `runs/.work/<run-id>/03-verification-research-T2-v1.md`.
    c. **Rework** (step 5) only this task's packet. Then move on to the next task.
@@ -86,6 +86,7 @@ Turn the supplied conversation into an engaging, useful **Conversation Research 
 Subagents write their own artifacts; you never retype them.
 
 - Every dispatch must name the exact output path under `runs/.work/<run-id>/`, plus version, run ID and current timestamp.
+- Give paths, IDs and the task, not reading instructions: each agent's prompt defines what it reads. Never tell an agent to read `source.md` "in full" or to open every image; that overrides its context limits.
 - A subagent replies with the path and a short summary only. After each dispatch, confirm the file exists and read only what you need: for a verification report its frontmatter and the BLOCKER/MAJOR findings (use the reply's summary; Read with `limit`), not the whole artifact. Read packets in full only when writing the final report. Your context is limited and the run is long.
 - If the file is missing or truncated, re-dispatch with the same output path and say what is missing. Do not reconstruct the artifact from the reply yourself.
 - You write only: `source.md`, `state.yaml`, Change Requests, the final report, and the released copy.
