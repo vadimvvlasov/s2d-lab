@@ -287,8 +287,11 @@ def run_id_for(case: dict) -> str:
     return case.get("run_id", f"2026-11-08-t1-{case['id']}")
 
 
-def patch_agent(path: Path, web: bool) -> None:
-    """Make the agent directly runnable; deny web and MCP code execution. Body untouched."""
+def patch_agent(path: Path, web: bool, options: dict | None = None) -> None:
+    """Make the agent directly runnable; deny web and MCP tools; apply option overrides.
+
+    The prompt body is untouched. `options` replaces the agent's `options:` block
+    (passed by opencode to the provider, e.g. reasoningEffort)."""
     text = path.read_text(encoding="utf-8")
     head, sep, body = text.partition("\n---\n")
     head = re.sub(r"^mode:.*$", "mode: primary", head, flags=re.M)
@@ -297,6 +300,10 @@ def patch_agent(path: Path, web: bool) -> None:
     # MCP tools (e.g. a global filesystem server) bypass edit permissions and the sandbox.
     mcp_deny = "".join(f'\n  "{s}_*": deny' for s in MCP_SERVERS)
     head = re.sub(r"^permission:\s*$", "permission:\n  execute: deny" + mcp_deny, head, count=1, flags=re.M)
+    if options:
+        fm = yaml.safe_load(head.removeprefix("---\n")) or {}
+        fm["options"] = {**(fm.get("options") or {}), **options}
+        head = "---\n" + yaml.safe_dump(fm, sort_keys=False, allow_unicode=True).rstrip("\n")
     path.write_text(head + sep + body, encoding="utf-8")
 
 
@@ -322,16 +329,22 @@ def sandbox_env(sandbox: Path) -> dict:
     return env
 
 
-def build_sandbox(case: dict, base: Path) -> tuple[Path, Path]:
+def build_sandbox(case: dict, base: Path, options: dict | None = None, ref: str | None = None) -> tuple[Path, Path]:
     sandbox = base / case["id"]
     sandbox.mkdir(parents=True)
-    for name in SANDBOX_COPY:
-        src = ROOT / name
-        if src.is_dir():
-            shutil.copytree(src, sandbox / name, ignore=shutil.ignore_patterns("__pycache__", "audit", "assets"))
-        elif src.exists():
-            shutil.copy2(src, sandbox / name)
-    patch_agent(sandbox / ".opencode" / "agents" / f"{case['agent']}.md", bool(case.get("web", False)))
+    if ref:  # prompts/docs from a git revision, for A/B comparisons
+        names = [n for n in SANDBOX_COPY if subprocess.run(
+            ["git", "cat-file", "-e", f"{ref}:{n}"], cwd=ROOT, capture_output=True).returncode == 0]
+        archive = subprocess.run(["git", "archive", ref, *names], cwd=ROOT, capture_output=True, check=True)
+        subprocess.run(["tar", "-x", "-C", str(sandbox)], input=archive.stdout, check=True)
+    else:
+        for name in SANDBOX_COPY:
+            src = ROOT / name
+            if src.is_dir():
+                shutil.copytree(src, sandbox / name, ignore=shutil.ignore_patterns("__pycache__", "audit", "assets"))
+            elif src.exists():
+                shutil.copy2(src, sandbox / name)
+    patch_agent(sandbox / ".opencode" / "agents" / f"{case['agent']}.md", bool(case.get("web", False)), options)
     run_dir = sandbox / "runs" / ".work" / run_id_for(case)
     shutil.copytree(CASES_DIR / case["id"] / "inputs", run_dir)
     return sandbox, run_dir
@@ -369,9 +382,10 @@ def read_usage(log: Path) -> tuple[dict, int]:
     return tokens, steps
 
 
-def run_case(case: dict, base: Path, results: Path, model: str, timeout: int) -> CaseResult:
+def run_case(case: dict, base: Path, results: Path, model: str, timeout: int, options: dict,
+             ref: str | None = None) -> CaseResult:
     res = CaseResult(case["id"], case["agent"])
-    sandbox, run_dir = build_sandbox(case, base)
+    sandbox, run_dir = build_sandbox(case, base, options, ref)
     dest = results / case["id"]
     log = sandbox / "opencode.log"
     cmd = [
@@ -412,9 +426,10 @@ def run_case(case: dict, base: Path, results: Path, model: str, timeout: int) ->
 # ---------------------------------------------------------------- reporting
 
 
-def write_summary(results_dir: Path, results: list[CaseResult], strict: bool, model: str) -> None:
+def write_summary(results_dir: Path, results: list[CaseResult], strict: bool, model: str, options: dict) -> None:
     data = {
         "model": model,
+        "options": options,
         "strict": strict,
         "cases": [
             {
@@ -431,7 +446,7 @@ def write_summary(results_dir: Path, results: list[CaseResult], strict: bool, mo
         ],
     }
     (results_dir / "summary.json").write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-    lines = [f"# T1 stage tests — {results_dir.name}", "", f"Model: `{model}`", "",
+    lines = [f"# T1 stage tests — {results_dir.name}", "", f"Model: `{model}` · options: `{options or 'agent defaults'}`", "",
              "| Case | Agent | Result | Time, s | Steps | Out tokens | Failed checks |", "|---|---|---|---|---|---|---|"]
     for r in results:
         failed = [f"{c.name} ({c.detail})" if c.detail else c.name for c in r.checks if not c.ok]
@@ -466,12 +481,23 @@ def main() -> int:
                          "the KV cache and every case gets slower)")
     ap.add_argument("--timeout", type=int, default=3600, help="seconds per case (default 3600)")
     ap.add_argument("--strict", action="store_true", help="format checks also fail the run")
+    ap.add_argument("--set", dest="sets", action="append", default=[], metavar="KEY=VALUE",
+                    help="override an agent option for this run, e.g. --set reasoningEffort=low (repeatable)")
+    ap.add_argument("--prompts-ref", metavar="GIT_REF",
+                    help="take agents/docs/templates from this git revision instead of the working tree "
+                         "(A/B against an older prompt; cases and checks still come from the working tree)")
     ap.add_argument("--list", action="store_true", help="list cases and exit")
     ap.add_argument("--dry-run", action="store_true", help="build sandboxes and print prompts; do not call the model")
     ap.add_argument("--check-only", metavar="DIR", help="re-evaluate an existing results directory")
     ap.add_argument("--keep-sandbox", action="store_true", help="do not delete the sandbox directory")
     args = ap.parse_args()
 
+    options = {}
+    for item in args.sets:
+        key, sep, value = item.partition("=")
+        if not sep:
+            ap.error(f"--set expects KEY=VALUE, got {item!r}")
+        options[key] = yaml.safe_load(value)
     cases = load_cases()
     if args.keyword:
         words = [w for w in args.keyword.split(",") if w]
@@ -503,25 +529,28 @@ def main() -> int:
     base = Path(tempfile.mkdtemp(prefix="s2d-t1-"))
     if args.dry_run:
         for c in cases:
-            sandbox, _ = build_sandbox(c, base)
+            sandbox, _ = build_sandbox(c, base, options, args.prompts_ref)
             print(f"== {c['id']}  sandbox: {sandbox}\n{render_prompt(c)}\n")
         return 0
 
     stamp = dt.datetime.now().strftime("%Y-%m-%dT%H%M%S")
     results_dir = RESULTS_DIR / stamp
     results_dir.mkdir(parents=True)
-    print(f"model {args.model} · {len(cases)} case(s) · results: {results_dir.relative_to(ROOT)}", flush=True)
+    print(f"model {args.model} · options {options or 'agent defaults'} · prompts {args.prompts_ref or 'working tree'} · "
+          f"{len(cases)} case(s) · "
+          f"results: {results_dir.relative_to(ROOT)}", flush=True)
 
     started = time.monotonic()
     results: list[CaseResult] = []
     with cf.ThreadPoolExecutor(max_workers=max(1, args.jobs)) as pool:
-        futures = [pool.submit(run_case, c, base, results_dir, args.model, args.timeout) for c in cases]
+        futures = [pool.submit(run_case, c, base, results_dir, args.model, args.timeout, options, args.prompts_ref)
+                   for c in cases]
         for fut in cf.as_completed(futures):
             r = fut.result()
             results.append(r)
             print_result(r, args.strict)
     results.sort(key=lambda r: r.case_id)
-    write_summary(results_dir, results, args.strict, args.model)
+    write_summary(results_dir, results, args.strict, args.model, {**options, **({"prompts_ref": args.prompts_ref} if args.prompts_ref else {})})
     if not args.keep_sandbox:
         shutil.rmtree(base, ignore_errors=True)
 
