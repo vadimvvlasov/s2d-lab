@@ -18,6 +18,7 @@ class ArtifactStatus(str, Enum):
     DRAFT = "draft"
     SUBMITTED_FOR_REVIEW = "submitted_for_review"
     PASS = "pass"
+    PASS_WITH_LIMITATIONS = "pass_with_limitations"
     CHANGES_REQUESTED = "changes_requested"
     ESCALATED = "escalated"
     NOT_STARTED = "not_started"

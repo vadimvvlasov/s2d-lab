@@ -26,6 +26,7 @@ Prefer primary sources for facts. arXiv is a research discovery source; Investop
 2. Open the repository in OpenCode and run:
    - `/recap` — newest export of `investment-decisions-with-ml`;
    - `/recap "/path/to/ChatExport_2026-11-10"` — a specific export;
-   - `/recap --chat "other-group"` — newest export of another chat.
+   - `/recap --chat "other-group"` — newest export of another chat;
+   - `/recap --resume 2026-11-10-tg-181756` — continue an interrupted run: finished artifacts in `runs/.work/<run-id>/` are reused, work resumes at the first unfinished step.
 
 The whole export (all messages and photos) is converted to `runs/.work/<run-id>/source.md` + `images/` by `scripts/tg_export_to_source.py`. A conversation pasted into the session still works and takes precedence. Each photo is described once by a vision model (verbatim text, numbers, chart contents; cached in `runs/.work/.image-descriptions/`) and the description is inserted under the photo link. Agents work from the descriptions and open an image only when a material claim rests on it; the auditor checks those against the original. Endpoint: `S2D_VISION_URL` / `S2D_VISION_KEY` / `S2D_VISION_MODEL` (default: x99); `--no-describe` skips it. The vLLM server must allow enough images per prompt (`--limit-mm-per-prompt '{"image": 16}'`), since an agent's opened images accumulate in its context.

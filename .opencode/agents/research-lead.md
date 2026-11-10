@@ -30,6 +30,8 @@ Turn the supplied conversation into an engaging, useful **Conversation Research 
 
 ## Workflow
 
+**Resume (`--resume <run-id>` in the request):** continue an existing run instead of starting a new one. Skip intake; use `runs/.work/<run-id>/source.md`. Read `state.yaml`, list the run directory, then trust files over state: an artifact counts as done when its file exists, has frontmatter and complete sections (a packet: every question it covers has Claims and Evidence; a verification report: a `## Verdict`). Record what you reuse in `state.yaml` (`next_action`, `current_phase`) and continue from the first step that is not done — do not re-run done steps. Minor dispositions and corrections already recorded in `state.yaml` still apply to later dispatches. If a done artifact was produced for different inputs (e.g. the Question Map changed after it), redo it.
+
 1. **Source intake:**
    - **Telegram export (default):** unless the user pasted a conversation into the session, run `uv run scripts/tg_export_to_source.py <arguments>` with the `/recap` arguments verbatim (none → newest export of `investment-decisions-with-ml` in `~/Downloads/Telegram Desktop`). On `TELEGRAM INTAKE OK`, use the printed `run_id`, `created_at` and `source` path as-is; do not rewrite `source.md`. Images referenced in it live in `runs/.work/<run-id>/images/`; each has an auto-generated description in `source.md`.
    - **Pasted conversation:** store it in `runs/.work/<run-id>/source.md` immediately.
