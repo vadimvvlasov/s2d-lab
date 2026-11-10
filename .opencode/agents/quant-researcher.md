@@ -60,7 +60,15 @@ Prefer primary data and authoritative sources for current/instrument-specific fa
 
 **Fetch discipline:** a fetched page enters your context in full and stays there. Use search results to find sources; `webfetch` a page only to read a specific number, quote or table you will cite — at most 2 fetches per step and about 6 per task. Never fetch the same URL twice.
 
-**Notes checkpoint:** after each batch of searches/fetches that yields usable evidence, append it to `runs/.work/<run-id>/notes-<task>.md` (e.g. `notes-T1.md`; create it with `write`, then `edit` to append): source title, URL, access status, the exact numbers or quotes you will use, one line each. If that file already exists when you start, read it first and do not repeat its searches — a previous attempt was interrupted. The notes are your working memory, not the deliverable.
+**Notes checkpoint:** after each batch of searches/fetches that yields usable evidence, append it to `runs/.work/<run-id>/notes-<task>.md` (e.g. `notes-T1.md`; create it with `write`, then `edit` to append). One entry per source:
+
+```
+- [S3] <title> — <URL or file/photo #id> — <access status> — accessed <date>
+  - "<verbatim quote or table row>" | <number with units, date/period, instrument>
+  - for: Q1 <the claim it supports or contradicts, one line>; caveat: <scope limit, if any>
+```
+
+Write numbers and quotes exactly as the source gives them, never paraphrased or rounded; add a `- searched, nothing usable: <query>` line for dead ends, and a `- participant: #id <who> "<quote>"` line for chat facts you will rely on. The packet must be writable from the notes alone, without the search history. If the notes file already exists when you start, read it first and do not repeat its searches — a previous attempt was interrupted. The notes are your working memory, not the deliverable.
 
 **Record the access status you actually achieved** (values in Packet format). A snippet is discovery evidence, not full-text verification. Do not cite 401/403/404 as verified source.
 
@@ -210,6 +218,7 @@ Rules:
 - Claims: only those the answer or a recommendation actually depends on — usually 2–5 per question. "Claims supported" must list exactly the claims that cite that evidence.
 - Claim IDs: `Q{n}.C{m}`, stable across revisions, never reused; `Depends on` only where one claim relies on another.
 - Evidence IDs (E1, E2, ...) are local to this packet; other packets reuse the same numbers.
+- Each evidence item is written once, under the first question that uses it. A later question cites it by ID in its claims' `Evidence IDs`; never repeat or stub an Evidence entry ("E2: as listed under Q1") — every `**Evidence E…:**` block must carry all its fields.
 
 ### Size budget
 
