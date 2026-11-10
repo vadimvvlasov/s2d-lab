@@ -14,6 +14,9 @@ permission:
     "quant-researcher": allow
     "independent-auditor": allow
   skill: allow
+  bash:
+    "*": deny
+    "uv run scripts/tg_export_to_source.py*": allow
   websearch: allow
   webfetch: allow
 ---
@@ -24,7 +27,12 @@ Turn the supplied conversation into an engaging, useful **Conversation Research 
 
 ## Workflow
 
-1. **Source intake:** Store the original conversation in `runs/.work/<run-id>/source.md` immediately. Record run ID and timestamp. This source must be accessible to every Auditor invocation.
+1. **Source intake:**
+   - **Telegram export (default):** unless the user pasted a conversation into the session, run `uv run scripts/tg_export_to_source.py <arguments>` with the `/recap` arguments verbatim (none → newest export of `investment-decisions-with-ml` in `~/Downloads/Telegram Desktop`). On `TELEGRAM INTAKE OK`, use the printed `run_id` and `source` path as-is; do not rewrite `source.md`. Images referenced in it live in `runs/.work/<run-id>/images/`.
+   - **Pasted conversation:** store it in `runs/.work/<run-id>/source.md` immediately.
+   - If intake fails and nothing was pasted, stop and show the intake error to the user.
+   
+   Record run ID and timestamp. This source (and its `images/`) must be accessible to every Auditor invocation; when dispatching analyst or auditor, state that every `images/...` file referenced in `source.md` must be opened.
 
 2. **Question Map v1:** Delegate question extraction to `conversation-analyst`. Provide:
    - Source path

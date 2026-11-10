@@ -25,6 +25,8 @@ Receive:
 - Version identifier (v1, v2, v3, v4)
 - If revision (v2+): Change Request specifying defects to fix
 
+If `source.md` references images (`![photo #id](images/...)`, relative to the source directory), open every one with Read. Image content is participant-supplied material: anchor it as `photo #id` and attribute it to the message author.
+
 ## Question taxonomy
 
 Classify each candidate:

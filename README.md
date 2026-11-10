@@ -22,4 +22,10 @@ All agents operate within a bounded verifier/rework loop with maximum 3 revision
 Prefer primary sources for facts. arXiv is a research discovery source; Investopedia is an educational explainer; StockCharts ChartSchool is restricted by default pending permission/licence confirmation. See `docs/source-policy.md`.
 
 ## Run
-Open the repository in OpenCode, paste/attach a conversation, and run `/recap`.
+1. Telegram Desktop → chat → ⋮ → **Export chat history**: format **HTML**, enable **Photos**, pick the period. Default location: `~/Downloads/Telegram Desktop/ChatExport_YYYY-MM-DD/`.
+2. Open the repository in OpenCode and run:
+   - `/recap` — newest export of `investment-decisions-with-ml`;
+   - `/recap "/path/to/ChatExport_2026-11-10"` — a specific export;
+   - `/recap --chat "other-group"` — newest export of another chat.
+
+The whole export (all messages and photos) is converted to `runs/.work/<run-id>/source.md` + `images/` by `scripts/tg_export_to_source.py`. A conversation pasted into the session still works and takes precedence. Photos are only analysed if the OpenCode model is vision-capable.

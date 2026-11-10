@@ -3,11 +3,13 @@ description: Turn the supplied conversation into a question-driven research reca
 agent: research-lead
 ---
 
-Analyze the conversation history supplied in this session and produce one **Conversation Research Recap**.
+Analyze the conversation and produce one **Conversation Research Recap**.
+
+Input (`$ARGUMENTS`): optional path to a Telegram Desktop HTML export folder (`ChatExport_*`) and/or `--chat "<title>"`. Without arguments, the newest export of `investment-decisions-with-ml` in `~/Downloads/Telegram Desktop` is used — all messages and photos in the export. A conversation pasted into the session takes precedence.
 
 Follow the bounded producer–verifier–rework workflow:
 
-1. **Source intake:** Store the full original conversation in `runs/.work/<run-id>/source.md`. Record run ID and timestamp.
+1. **Source intake:** Unless a conversation was pasted, run `uv run scripts/tg_export_to_source.py $ARGUMENTS`; on `TELEGRAM INTAKE OK` use the printed `run_id` and `source` (`runs/.work/<run-id>/source.md`, photos in `images/`) without rewriting it. For a pasted conversation, store it in `runs/.work/<run-id>/source.md`. If intake fails and nothing was pasted, stop and show the error. Record run ID and timestamp.
 
 2. **Question Map v1:** Extract explicit questions, implied questions, participant concerns, and disagreements via `conversation-analyst`. Keep researcher-added context separate. Save as `runs/.work/<run-id>/01-question-map-v1.md`.
 
