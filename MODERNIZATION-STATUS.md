@@ -1,258 +1,141 @@
 # S2D Lab Modernization Status
 
-**Last Updated:** 2026-11-08  
-**Current Phase:** D2 + D3 + E1 Complete — E2 Ready  
-**Repository:** /home/vadim/work/projects/invest/s2d-lab
+**Last Updated:** 2026-11-10
+**Current Phase:** Session 06 — local-model hardening (Qwen3.8 27B on one RTX 3090); first full `/recap` on a real chat released (with `--resume`)
+**Target:** Qwen3.8 27B (`x99/qwen3.8-27b`, vLLM, RTX 3090) via opencode v2.2.6
 
 ## Executive Summary
 
-**EPIC B + C1 + D2 + D3 + E1 complete.** EPIC B (prompt refactoring) validated on the confirmed target model (Qwen3.8 27B, provider `x99`, local RTX 3090) via gate-set fixtures (01, 03, 06, 07): **52/52 success criteria met, 0 failures**. C1 (artifact validator + prompt adoption) implemented and tested. D2 (claim dependency graph) validator enforces DAG property: existence check, cycle detection, transitive scope calculation; visualizer generates SVG/PNG/PDF graphs. D3 (state validator) enforces workflow rules with Pydantic schema: cycle limit ≤3, no PASS with unresolved BLOCKER, release eligibility conditions. E1 (structural test suite) validates D2+D3 with pytest: 11 passing integration tests.
+EPICs B, C1, D2, D3 and E1 were complete by 2026-11-08 (sessions 01–05, summarized below). E2 (7 fixtures, full `/recap` each) ran on 2026-11-09 and was paused half-way: one fixture run took hours on the local model, and the fixtures' seeded defects mostly did not materialize in live runs, so the auditor was rarely tested on them.
 
-**Cumulative token investment (baseline fb1b50d → post-B → post-C1):** 5836 → 6662 (+14.2%) → 7320 (+25.4% total; tiktoken o200k_base proxy). D2 + D3 + E1: **zero token cost** (external tooling only). Static prompt+doc context ~15k tokens (≈5.8% of 256k budget) — the context budget is not the constraint; per-turn KV-cache residency on the 24GB card is.
+Session 06 (2026-11-10) moved testing to cheap stage tests and hardened the pipeline for the local model:
 
-**Critical Next Step:** E2 — LLM-as-evaluator baseline on 7 fixtures (gate-set + fx02/04/05). E1 structural tests now available as pre-flight checks.
+- **T1 stage tests:** one agent, frozen inputs, code-checked. 11 cases, ~2–4 min each; replaces full fixture runs for prompt and model changes.
+- **Smaller agent contexts:** each agent reads only what it is given; formats are inlined in prompts; size budgets; single write; subagents write their own artifacts.
+- **Research and audit per research task**, plus a separate Question Map audit; rework and cycle caps are per task.
+- **Telegram intake** with one cached vision description per photo.
+- **Reasoning control:** per-agent `reasoning_effort` and a hard per-request reasoning cap.
+- **Compaction headroom, notes checkpoint and `--resume`.**
+- **Security:** agents could escape permissions through global MCP servers; now denied project-wide.
 
-## Completed Work
+The binding constraint on this hardware is **context growth inside one agent loop** (accumulated reasoning plus fetched pages) against a ~138k-token KV pool. Prompt size is not the constraint.
 
-### Session 01 (Baseline & Initial Refactoring)
-- ✅ A1: Baseline audit established
-- ✅ A2: 7 golden fixtures created (NOT executed)
-- ✅ B1: Research Lead duplicates removed (-208 tokens)
-- ✅ B2: Auditor prompt streamlined (-731 tokens)
-- ✅ C1: Artifact schema drafted (NOT implemented)
+## Session 06 (2026-11-10)
 
-### Session 02 (Complete EPIC B)
-- ✅ Architecture principle established (tasks not messages)
-- ✅ C1 schema issues fixed (claim IDs, evidence, validation rules)
-- ✅ B3: Quant Researcher adaptive workflow (+280 tokens by estimate)
-- ✅ B4: Conversation Analyst source anchors (+509 tokens by estimate)
-- ✅ B2 follow-up: Auditor enhanced (+392 tokens from post-B2 by estimate)
+### Test tiers
 
-### Session 03 (Fixture Validation — Gate Set)
-- ✅ Gate set executed on the confirmed target model (01, 03, 06, 07): 52/52 criteria, 0 failures, 17 documented deviations
-- ✅ B3/B4/B2-followup behavioral contracts validated in real runs (anchors, claim/evidence IDs, checklist-accessibility guard, 12-check final-report audit)
-- ✅ Bounded 3-cycle loop demonstrated end-to-end (fx07): cap enforced, no v5, no silent pass, escalation with owner options; false-resolution self-claim caught and rejected by the auditor
-- ✅ Real token measurement: +15.7% (agents) — supersedes the +5.6% word-count estimate
-- ✅ C1 input list produced (P-1…P-5: enum rules, audit-checklist sync, self-status cross-check, output budget, delivery robustness)
-- Details: `docs/audit/fixture-validation-results.md`, `docs/audit/session-03-summary.md`
+| Tier | What | Cost | When |
+|---|---|---|---|
+| T0 | `tests/e1-structural/` (16 pass), validators | seconds | every commit |
+| T1 | `scripts/run-stage-tests.py`, `tests/stage/cases/` (2 analyst, 6 auditor, 3 researcher) | 2–4 min/case, ~25 min all | every prompt/model change |
+| T2 | full `/recap` | 1–2+ h | before a release |
 
-### Session 04 (C1 Implementation)
-- ✅ C1 validator implemented: `scripts/validate-artifact.py` (669 lines, P-1/P-3/P-5 checks)
-- ✅ P-1 resolved: Evidence Type enum (added SECONDARY_DOCUMENT), CALCULATION access_status rule
-- ✅ P-2 resolved: `docs/audit-checklist.md` "Audit Mode Application" synced (10-check baseline, 12-check final/differential)
-- ✅ P-3 resolved: validator CR cross-check + auditor prompt warning (false-resolution detection)
-- ✅ P-4/P-5 documented: audit output budget (E2 input), verbatim recovery path (opencode.db)
-- ✅ Prompt adoption: all 4 agents schema-conformant
-- ✅ `docs/artifact-schema.md` promoted: DRAFT → VALIDATED
-- ✅ Token measurement: +658 tokens (+9.9% on 5-file basis, +10.8% agents-only)
-- ✅ Validator testing: gate-set artifacts validated (5/6 pass, source.md expected failure)
-- Details: `docs/audit/session-04-summary.md`
+- T1 runs in a sandbox: `PWD` is set to the sandbox, MCP and web are denied, and an isolation check is applied.
+- Cases are sequential by default: the KV cache holds about one full context, and parallel cases thrashed it (35–40 min per audit).
+- `--prompts-ref` runs an A/B against an older version of the prompts.
 
-### Session 05 (D2 + D3 + E1 Implementation)
-- ✅ D2.1 validator enhancement: dependency existence check, cycle detection (DAG), transitive scope calculation
-- ✅ D2.2 visualizer: `scripts/visualize-claim-graph.py` (260 lines) — SVG/PNG/PDF with changed-claim highlighting
-- ✅ D2 testing: fx01/fx06 validation pass, 3 synthetic negative tests
-- ✅ D3.1 Pydantic schema: `scripts/state_schema.py` (300 lines, Pydantic 2.x)
-- ✅ D3.2 validation rules: cycle limit ≤3, no PASS with BLOCKER, release eligibility, version/cycle consistency
-- ✅ D3.3 validator script: `scripts/validate-state.py` (100 lines)
-- ✅ D3 testing: 6/6 schema tests pass, gate-set validation (2/4 valid, 2 legitimate errors found)
-- ✅ E1.1 test suite: pytest-based structural tests (3 modules: artifact_schema, claim_dependencies, state_transitions)
-- ✅ E1.2 testing: 11 tests pass, 5 skip (fixture-dependent); integration tests with real validators
-- ✅ E1.3 scripts rename: `validate-artifact.py` → `validate_artifact.py` (import compatibility)
-- ✅ `docs/artifact-schema.md` updated with D2 implementation status
-- ✅ Token impact: zero (external tooling only, no prompt changes)
-- Details: `docs/audit/session-05-summary.md`
+### Prompt changes, measured on T1 (old → new)
 
-## Token Summary (measured, tiktoken o200k_base proxy)
+| Agent | Time | Input tokens | Output words |
+|---|---|---|---|
+| auditor | 227–286 s → 101–187 s (fx04 failed on old) | peak 39–55k → 24–35k | — |
+| researcher | fx04 273 → 224 s, fx06 210 → 136 s | fx04 33k → 17k | 2731/2233 → 1635/1296 |
+| analyst | 78/58 → 42/35 s | 16k/14k → 9k/5k | 733/619 → 430/429 |
 
-| File | Baseline (fb1b50d) | Post-B | Post-C1 | Δ B | Δ C1 | % Total |
-|---|---|---|---|---|---|---|
-| conversation-analyst.md | 647 | 1393 | 1458 | +746 | +65 | +125% |
-| independent-auditor.md | 1658 | 1334 | 1497 | −324 | +163 | −10% |
-| quant-researcher.md | 1094 | 1706 | 1829 | +612 | +123 | +67% |
-| research-lead.md | 1868 | 1660 | 1967 | −208 | +307 | +5% |
-| commands/recap.md | 569 | 569 | 569 | 0 | 0 | 0% |
-| **4-agent total** | **5267** | **6093** | **6751** | **+826** | **+658** | **+28.2%** |
-| 5-file total | 5836 | 6662 | 7320 | +826 | +658 | +25.4% |
+### Reasoning control
 
-Referenced docs/templates (7 files): 3892 → **static context total 11,212 tokens** (+ `docs/artifact-schema.md` 3738 referenced by dispatch prompts = 14,950; ≈5.8% of the 256k budget). Session-02's word×1.3 estimates (4334 → 4576, +5.6%) understated both the baseline and the growth — use tiktoken going forward.
+- opencode does **not** send agent or model `options` to the server; this was verified with a logging proxy.
+- Model variants `low|medium|high` become `reasoning_effort`. A subagent gets its variant only when its frontmatter has `model` and `variant`.
+- Provider `options.body` is sent: it carries `thinking_token_budget: 12288`.
+- T1, 9 researcher and auditor cases, all pass at every effort level:
 
-**Net +25.4% cumulative investment gains (baseline → post-B → post-C1, measured):**
-- Claim IDs with dependencies (Q1.C1, Q1.C2, depends_on)
-- Evidence IDs with metadata (E1, E2, type, source, access status, SECONDARY_DOCUMENT)
-- Stable source anchors (line span, turn ID, resolvable)
-- Structured YAML frontmatter (version, run_id, source_refs, validated schema)
-- Adaptive workflows (conditional logic, stopping rules)
-- Schema conformance (all 4 agents, enforced by validator)
+  | Effort | Total time | Change |
+  |---|---|---|
+  | none | 1653 s | — |
+  | medium | 1295 s | −22% |
+  | low | 1182 s | −28% |
 
-## Architecture Principle
+- Set per agent: analyst `low`, researcher `medium`, auditor `low`, lead `medium`.
 
-**S2D Lab is a system of tasks, artifacts, and independent verification.**
+### Infrastructure (x99, `~/HyperQwen`, `gpu-llm long`)
 
-```
-Task Backlog → Agent (stateless executor) → Artifact (versioned)
-  → Verifier (independent) → Dependency Graph → State Manager
-```
+- `CTX=long`: fp8 KV, pool pinned by `KV_MEM` (5.58 GB, about 139k tokens). `GPU_UTIL` does not size the pool in this profile.
+- `MAX_LEN=138000`, up from 131072; 16 images per prompt, up from 10.
+- Raising `KV_MEM` further cuts the transient memory margin (about 1.1 GB, with about 1 GB swing between boots), so it was not done.
+- `CTX=huge` (2/4-bit KV, 245k tokens) is quality-neutral, but decode is 1.25× slower at 32k and 1.9× at 128k; not needed.
+- opencode x99 model limits: context 138000, output 48000. Compaction starts near 90k, which leaves room for one step's growth plus the summary.
 
-Four agents remain unchanged, become specialized task executors.
+### Full `/recap` runs on ChatExport_2026-11-10 (168 messages, 18 photos)
 
-**Why optimal for RTX 3090:**
-- Sequential execution (one active KV cache)
-- Compact artifacts (conclusions, not chain-of-thought)
-- Selective source loading (chunking, anchors)
-- 25-30% context budget reserve
+| # | Outcome | Cause → fix |
+|---|---|---|
+| 1 | analyst failed 3× (vLLM: max 10 images/prompt); vLLM crashed in rework | → photo descriptions at intake; sequential dispatch |
+| 2 | researcher and auditor failed: "Compaction summary reached the output token limit" | → bounded source reading |
+| 3 | lead's intake command denied; lead then copied Chromium and tried a shell through MCP | → deny `execute`, `filesystem_*`, `playwright_*`, `context7_*`, `external_directory` |
+| 4 | researcher T1 compaction failure again (24–28k reasoning steps) | → reasoning effort, reasoning cap, output reserve |
+| 5 | QM + audit + T1 done, compaction failure once; paused | replay of T1 with new config: 9 min, peak 98k, no failure |
+| 6 | `--resume` of #5: released, PASS_WITH_LIMITATIONS, no infrastructure failures | see "Run 6" below |
 
-## Implementation Status
+### Run 6 (resume of 2026-11-10-tg-181756)
 
-### ✅ EPIC A — Baseline and Measurements
-- A1: Baseline snapshot created
-- A2: 7 golden fixtures authored (4 of 7 executed in session 03: 01, 03, 06, 07 — gate set; 02/04/05 reserved for the E2 full baseline)
+**Released** `runs/2026-11-10-conversation-research-recap.md` (Russian, ~1,900 words against a 700–1,300 target). Run `2026-11-10-tg-181756`.
 
-### ✅ EPIC B — Prompt Refactor
-- B1: Research Lead duplicates removed
-- B2: Auditor streamlined + enhanced
-- B3: Quant Researcher adaptive + claim IDs
-- B4: Conversation Analyst source anchors
+| Stage | Time | Result |
+|---|---|---|
+| Intake, Question Map, QM audit (reused from run 5) | — | PASS_WITH_LIMITATIONS (2 MINOR) |
+| T1 QQQ bottom, T2 AI ETFs, T3 portfolio, T4 NVDA | 20:38–23:15 | each: v1 → CHANGES_REQUESTED → v2 → PASS_WITH_LIMITATIONS; 7 CRs, all MAJOR |
+| Final report v1 + final audit | 23:15–23:42 | PASS_WITH_LIMITATIONS, 0 BLOCKER / 0 MAJOR / 4 MINOR |
+| Release (v2 with the MINOR fixes) | second `--resume` | the lead hit 80 steps one step before release |
 
-### ✅ EPIC C — Context Architecture (Partial)
-- C1: Validator + schema conformance **COMPLETE** (session 04)
-- C2: Source index (NOT STARTED)
-- C3: Token budget manager (NOT STARTED)
-- C4: Sequential scheduling (NOT STARTED)
+- Wall time: 3 h 10 min plus 9 min for the second resume. Earlier stages of run 5 took ~32 min.
+- No infrastructure failures: no compaction errors, no server errors. The auditor opened the original photos (#50868, #50959).
+- **All 7 MAJOR findings are one defect type:** the researcher states specifics (dates, valuations, fund names, percentages, a BBC quote) that are absent from its recorded excerpts. Rework took about 1 h 40 min of the 3 h 10 min.
+- State hygiene: review IDs are not `REV-NNN` (4 `validate-state.py` errors), and CR status is `RESOLVED` instead of `verified_resolved`.
 
-### ⏳ EPIC D — Verifier and State (Partial, D2 + D3 complete)
-- D1: Source-first audit (NOT STARTED)
-- D2: Claim dependency graph ✅ **COMPLETE** (session 05)
-- D3: State validator ✅ **COMPLETE** (session 05)
-- D4: Resume protocol (NOT STARTED)
+## Risks (current)
 
-### ✅ EPIC E — Tests and Eval (Partial, E1 complete)
-- E1: Automated structural tests ✅ **COMPLETE** (session 05)
-- E2: LLM behavior eval (NOT STARTED)
-- E3: Adversarial cases (NOT STARTED)
+1. **Researcher adds specifics from model memory** beyond recorded evidence. The auditor catches them, at the cost of one cycle per task. Next fix: check every number, date and name against `notes-T<n>.md` before writing the packet.
+2. **Context growth within one agent loop.** Prior reasoning stays in context for the whole loop. Mitigated by the reasoning cap, effort variants, a 48k output reserve, the notes checkpoint and fetch discipline. A compaction that does fire is lossy.
+3. **Size budgets are not followed:** packets run 1500–2300 words against a 1500-word budget. This is reported as a T1 format check only.
+4. **opencode passes only part of the config** (agent and model `options` are not sent) and uses permissive defaults: `external_directory` is allowed with `--auto`, and global MCP servers are open to agents. Re-verify after opencode upgrades.
+5. **Photo descriptions can be wrong:** in run 5 the description misread a chart's year. Material numbers must be checked against the image; the auditor rule requires it.
+6. **Lead state hygiene:** the lead writes CR status `RESOLVED`, while the schema expects `verified_resolved`, and `state.yaml` lags behind the files. `--resume` trusts files over state.
 
-### ⏳ EPIC F — Documentation and Rollout (NOT STARTED)
-- F1: Update workflow docs
-- F2: Rollout
+## EPIC status
 
-## Quality Gates
-
-**Before C1 Implementation — MET (session 03, 2026-11-08):**
-- [x] Execute at least 3 critical fixtures (03-07) — gate set 01+03+06+07 executed on the target model
-- [x] Validate: expected outputs match actual outputs — 52/52 criteria (17 documented deviations, all safe-direction or contract-documented; see `docs/audit/fixture-validation-results.md`)
-- [x] Confirm checklist (`docs/audit-checklist.md`) accessible at runtime — the accessibility guard fired in every differential audit (all 4 runs); caveat: the doc's own "Audit Mode Application" section is stale vs the auditor prompt (C1 input P-2)
-- [x] Measure actual token counts with target model (if available) — tiktoken o200k_base proxy measured: 5267 → 6093 agents (+15.7%); per-run artifact tokens recorded for all 4 runs
-
-**Do NOT:**
-- Implement C1 validator without fixture validation
-- Implement D2 dependency graph without C1 validator
-- Implement D3 state validator without D2 working
-- Claim behavioral equivalence without execution evidence
-
-## Critical Path
-
-```
-B complete → gate set validated on target model (session 03) ✅
-   ↓
-C1: validator + prompt adoption (session 04) ✅
-   ↓
-D2: claim dependency graph (session 05) ✅
-   ↓
-D3: state validator (session 05) ✅
-   ↓
-E1: structural tests (session 05) ✅
-   ↓
-E2 (LLM eval: full 7-fixture baseline) → E3 (adversarial) → D1 (source-first)
-   ↓
-F (documentation, rollout)
-```
-
-## Risks
-
-1. **Auditor output runs 2–4× over stated token targets** (measured 2071–4129 vs 500–1000 / 1500–2000 targets) — rebaseline the output budget or tighten the contract before E2 (P-4)
-2. **DRAFT schema enum drift in the wild** (`SECONDARY_DOCUMENT`; `Access status: N/A` on derived items) — the C1 validator must decide these rules (P-1)
-3. **Producer self-declared CR status is not trustworthy** (fx07 v3's false "resolved" self-claim, caught by the cycle-2 auditor) — validator cross-check required (P-3)
-4. **KV-cache residency on the 24GB card unmeasured** — static context is 14.3k tokens (≈6% of budget), but per-turn residency with live sources was not measured on the card; E2 should record VRAM/KV usage
-5. **Fixtures 02/04/05 unexecuted** — E2 runs all 7 for the full baseline
-
-## Git Commits (Session 02)
-
-```
-8ca247c docs(session-02): complete EPIC B and update progress tracking
-7401fd3 refactor(b2-followup): Auditor output compactness and coverage
-0cd5f93 refactor(b4): Analyst with stable source anchors and compact map
-bea255c refactor(b3): adaptive Researcher with claim IDs and compact output
-1854443 fix(c1): correct artifact schema issues per session-02 guidance
-5ed97c6 docs: establish architectural principle and correct task statuses
-```
-
-## Git Commits (Session 03)
-
-```
-c9c2903 docs(agents): add Python tooling guidance with uv
-<new>   chore(scripts): add token-count.py (tiktoken) prompt/artifact measurement
-<new>   docs(audit): session-03 fixture validation results, summary, status updates
-```
-
-## Git Commits (Session 04)
-
-```
-9da7207 docs(audit): session-03 fixture validation results, summary, status updates
-869f84f feat(c1): implement artifact validator with P-1 through P-5 checks
-f2884f8 fix(c1): resolve P-1 evidence enum and P-2 checklist sync
-e2b93dc feat(c1): prompt adoption - agents produce schema-conformant artifacts
-f0575a1 docs(audit): session-04 summary and status updates (C1 complete)
-```
-
-## Git Commits (Session 05)
-
-```
-bdc97be feat(d2): claim dependency graph validator and visualizer
-ce592e3 feat(d3): state schema validator with Pydantic
-<new>   docs(audit): session-05 summary and status updates (D2 + D3 complete)
-```
-9da7207 docs(audit): session-03 fixture validation results, summary, status updates
-869f84f feat(c1): implement artifact validator with P-1/P-3/P-5 checks
-f2884f8 fix(c1): resolve P-1 evidence enum + P-2 audit checklist sync
-e2b93dc refactor(c1): prompt adoption — schema-conformant artifacts (all 4 agents)
-<new>   docs(audit): session-04 summary and status updates (C1 complete)
-```
-
-## Documentation
-
-- `docs/architecture-principle.md` — Strategic foundation
-- `docs/artifact-schema.md` — Claim IDs, evidence, validation (DRAFT)
-- `docs/audit-checklist.md` — Complete 12-point audit reference
-- `docs/audit/baseline.md` — Initial state assessment
-- `docs/audit/session-01-summary.md` — Session 01 report
-- `docs/audit/session-02-summary.md` — Session 02 report
-- `docs/audit/fixture-validation-results.md` — Session 03 gate-set results (52/52 criteria, deviation inventory, token records)
-- `docs/audit/session-03-summary.md` — Session 03 report (incl. C1 input list P-1…P-5)
-- `docs/audit/session-04-summary.md` — Session 04 report (C1 validator + prompt adoption complete)
-- `docs/audit/session-05-summary.md` — Session 05 report (D2 claim dependency graph complete)
-- `docs/audit/modernization-progress.md` — Detailed tracker
-- `tests/fixtures/*.md` — 7 golden test fixtures (4 of 7 executed, session 03)
-- Per-run audit trails: `runs/.work/2026-11-08-fx{01,03,06,07}-*/` (gitignored; on-disk evidence)
+| EPIC | Item | Status |
+|---|---|---|
+| A | Baseline, 7 fixtures | ✅ |
+| B | Prompt refactor | ✅; superseded in part by session 06 compaction |
+| C | C1 validator + schema | ✅ |
+| C | C2 source index | partial: anchor-based reading, intake photo descriptions |
+| C | C3 token budget manager | partial: size budgets, reasoning cap, compaction headroom (config, not a manager) |
+| C | C4 sequential scheduling | ✅ (sequential dispatch; T1 `--jobs 1`) |
+| D | D1 source-first audit | not started |
+| D | D2 claim dependency graph | ✅ |
+| D | D3 state validator | ✅; `excluded` and `pass_with_limitations` statuses; BLOCKER scoped to its own artifact |
+| D | D4 resume protocol | ✅ `/recap --resume <run-id>`, used twice on run 6 |
+| E | E1 structural tests | ✅ (16 pass) |
+| E | E2 LLM behaviour eval | partial: 2026-11-09 fixture runs paused; replaced for day-to-day use by T1 |
+| E | E3 adversarial cases | partial: T1 seeded-defect cases (false access, calc error, trade signal, false CR resolution, omitted question) |
+| F | Docs and rollout | partial: README, `tests/stage/README.md`, `docs/verifier-loop.md`, `docs/workflow.md` updated |
 
 ## Next Actions
 
-### Immediate (Critical Priority) — E1, D2 + D3 complete
-1. **E1 automated structural tests** — Use D2 + D3 validators for automated testing (schema validation, dependency graph, state transitions)
-2. **E2 full 7-fixture baseline** — Full 7-fixture baseline on the target model (adds 02/04/05 to the session-03 gate set), with measured-token and (if possible) VRAM/KV recording
-3. **E3 adversarial cases** — Adversarial test scenarios
+1. Researcher rule: verify specifics against notes before writing (risk 1); A/B on T1 plus one researcher task replay.
+2. Lead: raise `steps` 80 → ~120 (a full run used all 80).
+3. Orchestration by code (a script drives tasks, retries and state; the lead writes only the report) if lead overhead or state drift stays material.
+4. Lead: `REV-NNN` review IDs and valid CR statuses; keep `state.yaml` in step with files.
 
-### After E-tier
-4. **D1 source-first audit** — Source-first audit pass (deferred per locked order)
-5. **D4 resume protocol** — Resume protocol implementation
-6. **F documentation and rollout** — Final documentation and rollout
+## Sessions 01–05 (summary)
 
-### Blockers
-- **None.** Session-02's three blockers are resolved: target model confirmed (Qwen3.8 27B, provider `x99`, local RTX 3090), runtime environment works (all 4 gate runs executed end-to-end), tokenizer measurement available (tiktoken o200k_base proxy via `scripts/token-count.py`).
+- **01–02:** baseline, 7 golden fixtures, EPIC B (lead dedup, auditor streamlined, researcher claim IDs, analyst source anchors).
+- **03:** gate set (fx01/03/06/07) on the target model, 52/52 criteria; bounded 3-cycle loop shown end to end (fx07).
+- **04:** C1 validator (`scripts/validate_artifact.py`) and schema-conformant prompts.
+- **05:** D2 claim dependency graph and visualizer; D3 Pydantic state schema; E1 pytest suite.
+- **Details:** `docs/audit/session-0{1..5}-summary.md`, `docs/audit/fixture-validation-results.md`, `docs/audit/modernization-progress.md`.
+- **E2 2026-11-09 pause note (per-fixture state):** `runs/.work/PAUSE-2026-11-09-resume-note.md` (gitignored).
 
 ---
 
-**Key Principle:** Do NOT automate orchestration around unstable prompt contracts.
-
-**Implementation Order:** A → B → C → D → E (validated in this order)
-
-**Current Status:** EPIC B validated on the target model; gate set (4 of 7 fixtures) passed with zero fixture failures; **C1 complete** (validator + prompt adoption); **D2 + D3 complete** (dependency graph + state validator); E1 is the next milestone.
+**Key principle:** validate every infrastructure or prompt change on T1 (or a single-agent replay) before a full T2 run.
