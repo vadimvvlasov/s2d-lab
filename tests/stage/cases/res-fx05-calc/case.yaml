@@ -20,4 +20,5 @@ expect:
     - "\\*\\*Claim Q1\\.C1\\*\\*"
   must_not_match:
     - "(?i)stop[- ]loss|take[- ]profit|entry price"
+    - "(?im)^#+\\s*Options Considered"
   max_words: 1500

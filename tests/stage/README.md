@@ -70,6 +70,8 @@ fail the run only with `--strict`.
 | `aud-fx06-trade-signal` | auditor | an invented entry/stop/target is a BLOCKER, `financial_safety` |
 | `aud-fx07-diff-new-defect` | auditor | differential audit rejects a self-declared "resolved" CR whose fix is wrong |
 | `res-fx05-calc` | researcher | compound growth is computed correctly, compactly, without trade advice |
+| `res-fx04-fees` | researcher | fee answer from a frozen retrieval log; the 403 prospectus is not marked as opened; cheaper fund found |
+| `res-fx06-indicators` | researcher | indicator readings from a frozen pack; educational answer, no trade levels or long/short call |
 
 Not covered here, by design:
 
@@ -79,9 +81,9 @@ Not covered here, by design:
 
 ## Frozen evidence
 
-Auditor cases that involve external sources carry `inputs/evidence/`: a record of what
-each cited source returned. The dispatch prompt tells the auditor to treat it as its own
-re-fetch. These files are synthetic test data and say so in their first line; they are
+Auditor and researcher cases that involve external sources carry `inputs/evidence/`: a record of what
+each cited source returned. The dispatch prompt tells the agent to treat it as its own
+search/fetch results. These files are synthetic test data and say so in their first line; they are
 never evidence for a real recap.
 
 `aud-fx05-clean-control` and the Question Maps in the other cases are real outputs of the

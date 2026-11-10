@@ -1,0 +1,24 @@
+description: Researcher answers fee questions from a frozen pack; honest access status for a 403 source; VOO is not the single cheapest
+fixture: tests/fixtures/04-inaccessible-source.md
+agent: quant-researcher
+output: 02-research-packet-v1.md
+prompt: |
+  Original conversation: {run_dir}/source.md
+  Question Map v1: {run_dir}/01-question-map-v1.md
+  Version: v1. Run ID: {run_id}. Current timestamp: {now}.
+  Output path: {output}
+
+  Web access is disabled for this run. {run_dir}/evidence/ holds the frozen retrieval log: what each
+  search or fetch returned on 2026-11-08. Treat it as your search and fetch results, cite each source
+  as given there, and record the access status each one actually achieved.
+
+  Produce Research Packet v1 and write it to the output path yourself.
+expect:
+  must_match:
+    - "0[.,]02 ?%"
+    - "SPYM|SPLG"
+    - "INACCESSIBLE|SEARCH_SNIPPET_ONLY"
+    - "\\*\\*Claim Q2\\.C1\\*\\*"
+  must_not_match:
+    - "(?is)prospectus[^\\n]*\\n(?:[^\\n]*\\n){0,4}[^\\n]*Access status:\\*\\*\\s*FULL_TEXT_OPENED"
+  max_words: 1500
